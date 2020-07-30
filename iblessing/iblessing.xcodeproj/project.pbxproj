@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6829627A24CBEE4A00EF9251 /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829627924CBEE4A00EF9251 /* Tests.m */; };
+		6829628724CBEEA300EF9251 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829628624CBEEA300EF9251 /* AppDelegate.m */; };
+		6829628D24CBEEA300EF9251 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829628C24CBEEA300EF9251 /* ViewController.m */; };
+		6829629024CBEEA300EF9251 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6829628E24CBEEA300EF9251 /* Main.storyboard */; };
+		6829629224CBEEA500EF9251 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6829629124CBEEA500EF9251 /* Assets.xcassets */; };
+		6829629524CBEEA500EF9251 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6829629324CBEEA500EF9251 /* LaunchScreen.storyboard */; };
+		6829629824CBEEA500EF9251 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829629724CBEEA500EF9251 /* main.m */; };
+		6829629F24CBEEFD00EF9251 /* MethodChainClasses.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829629E24CBEEFD00EF9251 /* MethodChainClasses.m */; };
+		682962E024CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 682962DE24CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.cpp */; };
+		682962E424CD490E00EF9251 /* Foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 682962E224CD490E00EF9251 /* Foundation.cpp */; };
+		6829631D24D0460500EF9251 /* FunctionPrototype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829631B24D0460500EF9251 /* FunctionPrototype.cpp */; };
+		6829632324D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829632124D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp */; };
+		6829633524D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829633324D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp */; };
 		685CE7DB24C56E8B002CC5E8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE7DA24C56E8B002CC5E8 /* main.cpp */; };
 		685CE80924C57079002CC5E8 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE7E424C57079002CC5E8 /* Symbol.cpp */; };
 		685CE80A24C57079002CC5E8 /* StringTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE7E524C57079002CC5E8 /* StringTable.cpp */; };
@@ -39,12 +52,40 @@
 		685CE85C24C57360002CC5E8 /* GeneratorDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE85724C57360002CC5E8 /* GeneratorDispatcher.cpp */; };
 		685CE85D24C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE85824C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp */; };
 		685CE88F24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE88D24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp */; };
+		68C362FA24C9C9D100441950 /* libSystem.B.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 68C362F924C9C9D000441950 /* libSystem.B.tbd */; };
+		68C3630024C9CA7200441950 /* csrutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68C362FE24C9CA7200441950 /* csrutil.cpp */; };
 		68D755D724C714E00057E092 /* libunicorn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D755D624C714E00057E092 /* libunicorn.a */; };
 		68D755D924C714EC0057E092 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D755D824C714EC0057E092 /* libcapstone.a */; };
 		68D755DC24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68D755DA24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6800875E24CAD5D100853E04 /* iblessing.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = iblessing.entitlements; sourceTree = "<group>"; };
+		6829627724CBEE4A00EF9251 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6829627924CBEE4A00EF9251 /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
+		6829627B24CBEE4A00EF9251 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6829628324CBEEA300EF9251 /* iblessing-sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iblessing-sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6829628524CBEEA300EF9251 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		6829628624CBEEA300EF9251 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		6829628B24CBEEA300EF9251 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		6829628C24CBEEA300EF9251 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		6829628F24CBEEA300EF9251 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		6829629124CBEEA500EF9251 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6829629424CBEEA500EF9251 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		6829629624CBEEA500EF9251 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6829629724CBEEA500EF9251 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		6829629D24CBEEFD00EF9251 /* MethodChainClasses.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MethodChainClasses.h; sourceTree = "<group>"; };
+		6829629E24CBEEFD00EF9251 /* MethodChainClasses.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MethodChainClasses.m; sourceTree = "<group>"; };
+		682962DE24CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMsgXREFStatisticsGenerator.cpp; sourceTree = "<group>"; };
+		682962DF24CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMsgXREFStatisticsGenerator.hpp; sourceTree = "<group>"; };
+		682962E224CD490E00EF9251 /* Foundation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Foundation.cpp; sourceTree = "<group>"; };
+		682962E324CD490E00EF9251 /* Foundation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Foundation.hpp; sourceTree = "<group>"; };
+		6829631B24D0460500EF9251 /* FunctionPrototype.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionPrototype.cpp; sourceTree = "<group>"; };
+		6829631C24D0460500EF9251 /* FunctionPrototype.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FunctionPrototype.hpp; sourceTree = "<group>"; };
+		6829632124D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolWrapperSerializationManager.cpp; sourceTree = "<group>"; };
+		6829632224D052AF00EF9251 /* SymbolWrapperSerializationManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SymbolWrapperSerializationManager.hpp; sourceTree = "<group>"; };
+		6829633324D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IDASymbolWrapperNamingScriptGenerator.cpp; sourceTree = "<group>"; };
+		6829633424D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IDASymbolWrapperNamingScriptGenerator.hpp; sourceTree = "<group>"; };
 		685CE7CF24C55309002CC5E8 /* iblessing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iblessing; sourceTree = BUILT_PRODUCTS_DIR; };
 		685CE7DA24C56E8B002CC5E8 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		685CE7DE24C56F5C002CC5E8 /* argparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = argparse.h; sourceTree = "<group>"; };
@@ -155,6 +196,10 @@
 		685CE88824C57390002CC5E8 /* stdint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdint.h; sourceTree = "<group>"; };
 		685CE88D24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodChainSerializationManager.cpp; sourceTree = "<group>"; };
 		685CE88E24C68933002CC5E8 /* ObjcMethodChainSerializationManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMethodChainSerializationManager.hpp; sourceTree = "<group>"; };
+		68C362F924C9C9D000441950 /* libSystem.B.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libSystem.B.tbd; path = usr/lib/libSystem.B.tbd; sourceTree = SDKROOT; };
+		68C362FD24C9CA4500441950 /* csr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csr.h; sourceTree = "<group>"; };
+		68C362FE24C9CA7200441950 /* csrutil.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = csrutil.cpp; sourceTree = "<group>"; };
+		68C362FF24C9CA7200441950 /* csrutil.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = csrutil.hpp; sourceTree = "<group>"; };
 		68D755D624C714E00057E092 /* libunicorn.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libunicorn.a; sourceTree = "<group>"; };
 		68D755D824C714EC0057E092 /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcapstone.a; sourceTree = "<group>"; };
 		68D755DA24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMsgXREFServerGenerator.cpp; sourceTree = "<group>"; };
@@ -162,10 +207,25 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6829627424CBEE4A00EF9251 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6829628024CBEEA300EF9251 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		685CE7CC24C55309002CC5E8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68C362FA24C9C9D100441950 /* libSystem.B.tbd in Frameworks */,
 				68D755D924C714EC0057E092 /* libcapstone.a in Frameworks */,
 				68D755D724C714E00057E092 /* libunicorn.a in Frameworks */,
 			);
@@ -174,10 +234,56 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6829627824CBEE4A00EF9251 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				6829627924CBEE4A00EF9251 /* Tests.m */,
+				6829627B24CBEE4A00EF9251 /* Info.plist */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		6829628424CBEEA300EF9251 /* iblessing-sample */ = {
+			isa = PBXGroup;
+			children = (
+				6829629C24CBEEED00EF9251 /* methodChain */,
+				6829628524CBEEA300EF9251 /* AppDelegate.h */,
+				6829628624CBEEA300EF9251 /* AppDelegate.m */,
+				6829628B24CBEEA300EF9251 /* ViewController.h */,
+				6829628C24CBEEA300EF9251 /* ViewController.m */,
+				6829628E24CBEEA300EF9251 /* Main.storyboard */,
+				6829629124CBEEA500EF9251 /* Assets.xcassets */,
+				6829629324CBEEA500EF9251 /* LaunchScreen.storyboard */,
+				6829629624CBEEA500EF9251 /* Info.plist */,
+				6829629724CBEEA500EF9251 /* main.m */,
+			);
+			path = "iblessing-sample";
+			sourceTree = "<group>";
+		};
+		6829629C24CBEEED00EF9251 /* methodChain */ = {
+			isa = PBXGroup;
+			children = (
+				6829629D24CBEEFD00EF9251 /* MethodChainClasses.h */,
+				6829629E24CBEEFD00EF9251 /* MethodChainClasses.m */,
+			);
+			path = methodChain;
+			sourceTree = "<group>";
+		};
+		682962E124CD48F100EF9251 /* structs */ = {
+			isa = PBXGroup;
+			children = (
+				682962E224CD490E00EF9251 /* Foundation.cpp */,
+				682962E324CD490E00EF9251 /* Foundation.hpp */,
+			);
+			path = structs;
+			sourceTree = "<group>";
+		};
 		685CE7C624C55309002CC5E8 = {
 			isa = PBXGroup;
 			children = (
 				685CE7D124C55309002CC5E8 /* iblessing */,
+				6829627824CBEE4A00EF9251 /* Tests */,
+				6829628424CBEEA300EF9251 /* iblessing-sample */,
 				685CE7D024C55309002CC5E8 /* Products */,
 				685CE82524C57145002CC5E8 /* Frameworks */,
 			);
@@ -187,6 +293,8 @@
 			isa = PBXGroup;
 			children = (
 				685CE7CF24C55309002CC5E8 /* iblessing */,
+				6829627724CBEE4A00EF9251 /* Tests.xctest */,
+				6829628324CBEEA300EF9251 /* iblessing-sample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -194,6 +302,8 @@
 		685CE7D124C55309002CC5E8 /* iblessing */ = {
 			isa = PBXGroup;
 			children = (
+				6800875E24CAD5D100853E04 /* iblessing.entitlements */,
+				68C362FB24C9CA2E00441950 /* platform */,
 				685CE88C24C68904002CC5E8 /* serialization */,
 				685CE85024C572FE002CC5E8 /* domain */,
 				685CE84B24C572CC002CC5E8 /* analyzer */,
@@ -248,6 +358,7 @@
 		685CE7E224C57079002CC5E8 /* mach-o */ = {
 			isa = PBXGroup;
 			children = (
+				682962E124CD48F100EF9251 /* structs */,
 				685CE7E324C57079002CC5E8 /* symtab */,
 				685CE7EA24C57079002CC5E8 /* memory */,
 				685CE7EF24C57079002CC5E8 /* disasm */,
@@ -363,6 +474,7 @@
 		685CE82524C57145002CC5E8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				68C362F924C9C9D000441950 /* libSystem.B.tbd */,
 				685CE82C24C57225002CC5E8 /* libcapstone.5.dylib */,
 				685CE82824C57155002CC5E8 /* libcapstone.a */,
 				685CE82624C57145002CC5E8 /* libunicorn.a */,
@@ -413,6 +525,8 @@
 			children = (
 				685CE84D24C572D4002CC5E8 /* AntiWrapper.cpp */,
 				685CE84E24C572D4002CC5E8 /* AntiWrapper.hpp */,
+				6829631B24D0460500EF9251 /* FunctionPrototype.cpp */,
+				6829631C24D0460500EF9251 /* FunctionPrototype.hpp */,
 			);
 			path = deobfuscator;
 			sourceTree = "<group>";
@@ -437,6 +551,10 @@
 				685CE85A24C57360002CC5E8 /* Generator.hpp */,
 				68D755DA24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp */,
 				68D755DB24C8012A0057E092 /* ObjcMsgXREFServerGenerator.hpp */,
+				682962DE24CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.cpp */,
+				682962DF24CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.hpp */,
+				6829633324D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp */,
+				6829633424D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.hpp */,
 			);
 			path = generator;
 			sourceTree = "<group>";
@@ -522,13 +640,67 @@
 			children = (
 				685CE88D24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp */,
 				685CE88E24C68933002CC5E8 /* ObjcMethodChainSerializationManager.hpp */,
+				6829632124D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp */,
+				6829632224D052AF00EF9251 /* SymbolWrapperSerializationManager.hpp */,
 			);
 			path = serialization;
+			sourceTree = "<group>";
+		};
+		68C362FB24C9CA2E00441950 /* platform */ = {
+			isa = PBXGroup;
+			children = (
+				68C362FC24C9CA3200441950 /* macos */,
+			);
+			path = platform;
+			sourceTree = "<group>";
+		};
+		68C362FC24C9CA3200441950 /* macos */ = {
+			isa = PBXGroup;
+			children = (
+				68C362FD24C9CA4500441950 /* csr.h */,
+				68C362FE24C9CA7200441950 /* csrutil.cpp */,
+				68C362FF24C9CA7200441950 /* csrutil.hpp */,
+			);
+			path = macos;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		6829627624CBEE4A00EF9251 /* Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6829627E24CBEE4A00EF9251 /* Build configuration list for PBXNativeTarget "Tests" */;
+			buildPhases = (
+				6829627324CBEE4A00EF9251 /* Sources */,
+				6829627424CBEE4A00EF9251 /* Frameworks */,
+				6829627524CBEE4A00EF9251 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Tests;
+			productName = Tests;
+			productReference = 6829627724CBEE4A00EF9251 /* Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		6829628224CBEEA300EF9251 /* iblessing-sample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6829629924CBEEA500EF9251 /* Build configuration list for PBXNativeTarget "iblessing-sample" */;
+			buildPhases = (
+				6829627F24CBEEA300EF9251 /* Sources */,
+				6829628024CBEEA300EF9251 /* Frameworks */,
+				6829628124CBEEA300EF9251 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "iblessing-sample";
+			productName = "iblessing-sample";
+			productReference = 6829628324CBEEA300EF9251 /* iblessing-sample.app */;
+			productType = "com.apple.product-type.application";
+		};
 		685CE7CE24C55309002CC5E8 /* iblessing */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 685CE7D624C55309002CC5E8 /* Build configuration list for PBXNativeTarget "iblessing" */;
@@ -554,6 +726,12 @@
 				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = soulghost;
 				TargetAttributes = {
+					6829627624CBEE4A00EF9251 = {
+						CreatedOnToolsVersion = 11.5;
+					};
+					6829628224CBEEA300EF9251 = {
+						CreatedOnToolsVersion = 11.5;
+					};
 					685CE7CE24C55309002CC5E8 = {
 						CreatedOnToolsVersion = 11.5;
 					};
@@ -573,11 +751,52 @@
 			projectRoot = "";
 			targets = (
 				685CE7CE24C55309002CC5E8 /* iblessing */,
+				6829627624CBEE4A00EF9251 /* Tests */,
+				6829628224CBEEA300EF9251 /* iblessing-sample */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		6829627524CBEE4A00EF9251 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6829628124CBEEA300EF9251 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6829629524CBEEA500EF9251 /* LaunchScreen.storyboard in Resources */,
+				6829629224CBEEA500EF9251 /* Assets.xcassets in Resources */,
+				6829629024CBEEA300EF9251 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		6829627324CBEE4A00EF9251 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6829627A24CBEE4A00EF9251 /* Tests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6829627F24CBEEA300EF9251 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6829628D24CBEEA300EF9251 /* ViewController.m in Sources */,
+				6829629F24CBEEFD00EF9251 /* MethodChainClasses.m in Sources */,
+				6829628724CBEEA300EF9251 /* AppDelegate.m in Sources */,
+				6829629824CBEEA500EF9251 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		685CE7CB24C55309002CC5E8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -588,6 +807,8 @@
 				685CE85D24C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp in Sources */,
 				685CE81324C57079002CC5E8 /* ObjcClass.cpp in Sources */,
 				685CE84624C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp in Sources */,
+				6829632324D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp in Sources */,
+				682962E424CD490E00EF9251 /* Foundation.cpp in Sources */,
 				685CE81724C57079002CC5E8 /* ObjcObject.cpp in Sources */,
 				685CE85324C57309002CC5E8 /* ObjcMethodChain.cpp in Sources */,
 				685CE84824C572A0002CC5E8 /* Scanner.cpp in Sources */,
@@ -595,14 +816,17 @@
 				685CE84F24C572D4002CC5E8 /* AntiWrapper.cpp in Sources */,
 				685CE81624C57079002CC5E8 /* ObjcIvar.cpp in Sources */,
 				685CE84424C572A0002CC5E8 /* ScannerDispatcher.cpp in Sources */,
+				682962E024CC7A2600EF9251 /* ObjcMsgXREFStatisticsGenerator.cpp in Sources */,
 				68D755DC24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp in Sources */,
 				685CE80924C57079002CC5E8 /* Symbol.cpp in Sources */,
 				685CE81E24C5708A002CC5E8 /* Object.cpp in Sources */,
 				685CE80D24C57079002CC5E8 /* VirtualMemoryV2.cpp in Sources */,
 				685CE81424C57079002CC5E8 /* ObjcMethod.cpp in Sources */,
 				685CE80C24C57079002CC5E8 /* VirtualMemory.cpp in Sources */,
+				6829633524D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp in Sources */,
 				685CE80B24C57079002CC5E8 /* SymbolTable.cpp in Sources */,
 				685CE88F24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp in Sources */,
+				6829631D24D0460500EF9251 /* FunctionPrototype.cpp in Sources */,
 				685CE81124C57079002CC5E8 /* DyldSimulator.cpp in Sources */,
 				685CE84724C572A0002CC5E8 /* AppInfoScanner.mm in Sources */,
 				685CE85C24C57360002CC5E8 /* GeneratorDispatcher.cpp in Sources */,
@@ -610,6 +834,7 @@
 				685CE80E24C57079002CC5E8 /* ARM64Registers.cpp in Sources */,
 				685CE81824C57079002CC5E8 /* UnicornARM64Runtime.cpp in Sources */,
 				685CE84A24C572A0002CC5E8 /* PredicateScanner.cpp in Sources */,
+				68C3630024C9CA7200441950 /* csrutil.cpp in Sources */,
 				685CE84924C572A0002CC5E8 /* SymbolWrapperScanner.cpp in Sources */,
 				685CE84524C572A0002CC5E8 /* ObjcClassXrefScanner.cpp in Sources */,
 				685CE81224C57079002CC5E8 /* ARM64Runtime.cpp in Sources */,
@@ -620,7 +845,101 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		6829628E24CBEEA300EF9251 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6829628F24CBEEA300EF9251 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		6829629324CBEEA500EF9251 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6829629424CBEEA500EF9251 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
+		6829627C24CBEE4A00EF9251 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cainiao.grievance.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		6829627D24CBEE4A00EF9251 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cainiao.grievance.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		6829629A24CBEEA500EF9251 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
+				INFOPLIST_FILE = "iblessing-sample/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soulghost.iblessing.iblessing-sample";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = Debug;
+		};
+		6829629B24CBEEA500EF9251 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
+				INFOPLIST_FILE = "iblessing-sample/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soulghost.iblessing.iblessing-sample";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = arm64;
+			};
+			name = Release;
+		};
 		685CE7D424C55309002CC5E8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -733,6 +1052,7 @@
 		685CE7D724C55309002CC5E8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6CMYQQFFT8;
 				DSTROOT = "${SRCROOT}/../build";
@@ -754,6 +1074,7 @@
 		685CE7D824C55309002CC5E8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6CMYQQFFT8;
 				DSTROOT = "${SRCROOT}/../build";
@@ -776,6 +1097,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6829627E24CBEE4A00EF9251 /* Build configuration list for PBXNativeTarget "Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6829627C24CBEE4A00EF9251 /* Debug */,
+				6829627D24CBEE4A00EF9251 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6829629924CBEEA500EF9251 /* Build configuration list for PBXNativeTarget "iblessing-sample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6829629A24CBEEA500EF9251 /* Debug */,
+				6829629B24CBEEA500EF9251 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		685CE7CA24C55309002CC5E8 /* Build configuration list for PBXProject "iblessing" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

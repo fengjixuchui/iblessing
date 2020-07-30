@@ -16,21 +16,33 @@
 - [x] Objective-C class realizing and parsing
 - [x] Scanners making dynamic analysis for arm64 assembly code and find key information or attack surface
 - [x] Scanners using unicorn to partially simulate Mach-O arm64 code execution and find some features
-- [x] Generators that can provide secondary processing on scanner's report to start a query server, or generate script for IDA.
+- [x] Generators that can provide secondary processing on scanner's report to start a query server, or generate script for IDA
+- [ ] objc function wrapper detect and ida usercall generate (working on)
+- [ ] objc_msgSend sub functions analysis
 - [ ] Diagnostic logs
+- [ ] Tests
 - [ ] More flexible scanner infrastructure for new scanner plugins
 - [ ] Swift class and method parsing
 - [ ] More scanners and generators
+- [ ] Cross-platform
 
 # Support 
+***unicorn may crash (segment fault or bus error) on some computers, I am trying to solve this problem.***
+***If you encounter any problems, you can contact me, thank you***
+
 In case you need support regarding iblessing or anything associated with it, you can:
 - create an issue and provide necessary information
 - contact [Sou1gh0st](https://twitter.com/Sou1gh0st) on Twitter 
 - send mail to xiuyutong1994#163.com 
 - send mail to xiuyutong1994#gmail.com
 
+# Changelog
+- 2020.07.30 - Improve symbol-wrapper scanner, and add ida scripts for symbol wrapper rename and prototype modification
+- 2020.07.21 - First release 
+
 # Get started
-1. You can download the [pre-relase iblessing binary](https://github.com/Soulghost/iblessing/releases) and enjoy it.
+⚠️⚠️⚠️ **Sometimes unicorn will crash on start when doing huge memory mapping, you can try to run it again, if it still can't work, please contact me or create an issue, thanks.**
+1. You can download the [pre-released iblessing binary](https://github.com/Soulghost/iblessing/releases) and enjoy it.
 2. run chmod +x for the binary
 3. For more tutorails, please check the [Documentation & Help](https://github.com/Soulghost/iblessing#documentation--help) below.
 
@@ -40,12 +52,16 @@ In case you need support regarding iblessing or anything associated with it, you
   - [Scan for AppInfos](https://github.com/Soulghost/iblessing#scan-for-appinfos)
   - [Scan for Class XREFs](https://github.com/Soulghost/iblessing#scan-for-class-xrefs)
   - [Scan for All objc_msgSend XREFs](https://github.com/Soulghost/iblessing#scan-for-all-objc_msgsend-xrefs)
+  - :new: [Scan for Simple Symbol Wrappers](https://github.com/Soulghost/iblessing/blob/features/anti_wrapper/README.md#scan-for-symbol-wrappers)
  
 - Generators
   - [Generate objc_msgSend Xrefs Query Server](https://github.com/Soulghost/iblessing#generate-objc_msgsend-xrefs-query-server)
   - [Generate IDA Scripts for objc_msgSend xrefs](https://github.com/Soulghost/iblessing#generate-ida-scripts-for-objc_msgsend-xrefs)
+  - :new: [Generate IDA Scripts for objc function wrapper rename and prototype modification](https://github.com/Soulghost/iblessing/blob/features/anti_wrapper/README.md#genereate-ida-script-for-objc-runtime-function-rename-and-prototype-modification)
 
 # How to Compile
+- Platform: macOS Only (Will support linux in the future)
+
 To get started compiling iblessing, please follow the steps below:
 ```
 git clone https://github.com/Soulghost/iblessing
@@ -115,6 +131,7 @@ A generator is a component that performs secondary processing on the report gene
 [*] Generator List:
     - ida-objc-msg-xref: generator ida scripts to add objc_msgSend xrefs from objc-msg-xref scanner's report
     - objc-msg-xref-server: server to query objc-msg xrefs
+    - objc-msg-xref-statistic: statistics among objc-msg-send reports
 ```
 
 ## Basic Usage
@@ -355,5 +372,105 @@ def add_objc_xrefs():
 
 Next open your IDA -> File -> Script File and load the script, this step may take a long time. And when it is done, you can find many xrefs for objc method:
 ![](https://github.com/Soulghost/iblessing/blob/master/resource/images/ida_objc_msgSend_xrefs.png?raw=true)
+
+### Scan for symbol wrappers
+A Mach-O file may contain multiple wrappers of commonly used dynamic library imported symbols, such as:
+```arm
+__text:00000001003842D8 sub_1003842CC                           ; CODE XREF: -[BDARVLynxTracker eventV3:params:adExtraData:]+168↑p
+__text:00000001003842D8                                         ; -[BDARVLynxTracker eventV3:params:adExtraData:]+214↑p ...
+__text:00000001003842D8                 MOV             X1, X27
+__text:00000001003842DC                 MOV             X2, X19
+__text:00000001003842E0                 B               objc_msgSend
+```
+
+We can convert the wrapper by usercall:
+```arm
+__text:00000001003842CC ; id __usercall objc_msgSend_61@<X0>(id@<X23>, const char *@<X28>, ...)
+__text:00000001003842CC _objc_msgSend_61                        ; CODE XREF: -[BDARVLynxTracker eventV3:params:adExtraData:]+2CC↑p
+__text:00000001003842CC                                         ; -[BDARVLynxTracker eventV3:params:adExtraData:]+320↑p ...
+__text:00000001003842CC                 MOV             X0, X23
+__text:00000001003842D0                 MOV             X1, X28
+__text:00000001003842D4                 B               objc_msgSend
+```
+
+The scanner can generate a report to record all wrappers, then you can use `ida-symbol-wrapper-naming` generator to generate ida scripts and implement this wrapper rename and prototype change.
+
+#### How to Use
+```
+iblessing -m scan -i symbol-wrapper -f <path-to-binary> -d 'symbols=_objc_msgSend,_objc_retain,_objc_release'
+iblessing -m scan -i symbol-wrapper -f <path-to-binary> -d 'symbols=*'
+```
+
+#### Usage Example
+We will take TikTok China as an example:
+```
+> iblessing -m scan -i symbol-wrapper -f /opt/one-btn/tmp/apps/抖音短视频/Payload/Aweme -d 'symbols=*'
+[*] set output path to /Users/soulghost/Desktop/git/iblessing-public/iblessing/build/Debug
+[*] input file is /opt/one-btn/tmp/apps/抖音短视频/Payload/Aweme
+[+] detect mach-o header 64
+[+] detect litten-endian
+[*] start Symbol Wrapper Scanner
+  [*] try to find wrappers for_objc_autoreleaseReturnValue, _objc_msgSend, _objc_release, _objc_releaseAndReturn, _objc_retain, _objc_retainAutorelease, _objc_retainAutoreleaseAndReturn, _objc_retainAutoreleaseReturnValue, _objc_retainAutoreleasedReturnValue
+  [*] Step1. find __TEXT,__text
+	[+] find __TEXT,__text at 0x100004000
+	[+] mapping text segment 0x100000000 ~ 0x106da0000 to unicorn engine
+  [*] Step 2. scan in __text
+	[*] start disassembler at 0x100004000
+	[*] / 0x106b68a54/0x106b68a58 (100.00%)
+	[*] reach to end of __text, stop
+
+  [*] Step 3. serialize wrapper graph to file
+	[*] saved to /Users/soulghost/Desktop/git/iblessing-public/iblessing/build/Debug/Aweme_wrapper-graph.iblessing.txt
+
+> head Aweme_wrapper-graph.iblessing.txt
+iblessing symbol-wrappers,ver:0.1;
+wrapperId;address;name;prototype
+0;0x100022190;_objc_retainAutoreleasedReturnValue;id __usercall f@<x0>(id@<x0>)
+1;0x100022198;_objc_retainAutoreleasedReturnValue;id __usercall f@<x0>(id@<x0>)
+2;0x1000221a0;_objc_release;id __usercall f@<x0>(id@<x22>)
+3;0x1000221a8;_objc_msgSend;id __usercall f@<x0>(id@<x0>, const char*@<x20>, ...)
+4;0x100022448;_objc_release;id __usercall f@<x0>(id@<x21>)
+5;0x10009c19c;_objc_autoreleaseReturnValue;id __usercall f@<x0>(id@<x0>)
+6;0x1000b6f94;_objc_msgSend;id __usercall f@<x0>(id@<x0>, const char*@<x1>, ...)
+7;0x100100248;_objc_autoreleaseReturnValue;id __usercall f@<x0>(id@<x0>)
+```
+
+Next, we can generate ida scripts from this report.
+
+### Genereate IDA Script for Objc Runtime Function Rename and Prototype Modification 
+```
+iblessing -m generator -i ida-symbol-wrapper-naming -f <path-to-report-from-symbol-wrapper>
+```
+
+#### Usage Example
+```
+> iblessing -m generator -i ida-symbol-wrapper-naming -f Aweme_wrapper-graph.iblessing.txt
+[*] set output path to /Users/soulghost/Desktop/git/iblessing-public/iblessing/build/Debug
+[*] input file is Aweme_wrapper-graph.iblessing.txt
+[*] start IDAObjMsgXREFGenerator
+  [*] load symbol-wrappers db for version iblessing symbol-wrappers,ver:0.1;
+  [*] table keys wrapperId;address;name;prototype
+  [*] Generating Naming Scripts ...
+  [*] saved to /Users/soulghost/Desktop/git/iblessing-public/iblessing/build/Debug/Aweme_wrapper-graph.iblessing.txt_ida_symbol_wrapper_naming.iblessing.py
+  
+> head Aweme_wrapper-graph.iblessing.txt_ida_symbol_wrapper_naming.iblessing.py
+def namingWrappers():
+    idc.set_name(0x100022190, '_objc_retainAutoreleasedReturnValue', ida_name.SN_FORCE)
+    idc.apply_type(0x100022190, idc.parse_decl('id __usercall f@<x0>(id@<x0>)', idc.PT_SILENT))
+    idc.set_name(0x100022198, '_objc_retainAutoreleasedReturnValue', ida_name.SN_FORCE)
+    idc.apply_type(0x100022198, idc.parse_decl('id __usercall f@<x0>(id@<x0>)', idc.PT_SILENT))
+    idc.set_name(0x1000221a0, '_objc_release', ida_name.SN_FORCE)
+    idc.apply_type(0x1000221a0, idc.parse_decl('id __usercall f@<x0>(id@<x22>)', idc.PT_SILENT))
+    idc.set_name(0x1000221a8, '_objc_msgSend', ida_name.SN_FORCE)
+    idc.apply_type(0x1000221a8, idc.parse_decl('id __usercall f@<x0>(id@<x0>, const char*@<x20>, ...)', idc.PT_SILENT))
+    idc.set_name(0x100022448, '_objc_release', ida_name.SN_FORCE)
+```
+
+Next open your IDA -> File -> Script File and load the script, this step may take a long time. And when it is done, You can observe some decompiled code changes:
+![](https://github.com/Soulghost/iblessing/blob/features/anti_wrapper/resource/images/ida_wrapped_call_before.png?raw=true)
+
+:arrow_down: :arrow_down: :arrow_down
+
+![](https://github.com/Soulghost/iblessing/blob/features/anti_wrapper/resource/images/ida_wrapped_call_after.png?raw=true)
 
 # To be continued

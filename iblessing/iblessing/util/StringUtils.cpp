@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "StringUtils.h"
 #include <sstream>
 #include <filesystem>
+#include <cassert>
 
 namespace StringUtils {
 /*--- This a C++ universal sprintf in the future.
@@ -99,6 +100,22 @@ bool has_suffix(const std::string &str, const std::string &suffix)
 {
     return str.size() >= suffix.size() &&
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+int countNonPrintablecharacters(const char *str, int limit) {
+    if (str == nullptr) {
+        return 0;
+    }
+    
+    int count = std::min((int)strlen(str), limit);
+    int total = 0;
+    for (int i = 0; i < count; i++) {
+        char c = str[i];
+        if (!(c >= 0x20 && c <= 0x7E)) {
+            total++;
+        }
+    }
+    return total;
 }
 
 };

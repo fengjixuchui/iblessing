@@ -13,6 +13,7 @@
 #include "SymbolTable.hpp"
 #include "termcolor.h"
 #include "StringUtils.h"
+#include "SymbolWrapperSerializationManager.hpp"
 #include <set>
 
 using namespace std;
@@ -50,6 +51,17 @@ void SymbolWrapperScanner::init() {
     fpen |= 0x300000; // set FPEN bit
     uc_reg_write(uc, UC_ARM64_REG_CPACR_EL1, &fpen);
     uc_context_save(uc, ctx);
+    
+    // setup common protos
+    symbol2proto["_objc_msgSend"] = {2, true, "id", {"id", "const char*", "..."}};
+    symbol2proto["_objc_retain"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_release"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_releaseAndReturn"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_retainAutoreleaseAndReturn"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_autoreleaseReturnValue"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_retainAutoreleaseReturnValue"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_retainAutoreleasedReturnValue"] = {1, false, "id", {"id"}};
+    symbol2proto["_objc_retainAutorelease"] = {1, false, "id", {"id"}};
 }
 
 int SymbolWrapperScanner::start() {
@@ -57,14 +69,25 @@ int SymbolWrapperScanner::start() {
     
     if (options.find("symbols") == options.end()) {
         cout << termcolor::red;
-        cout << StringUtils::format("Error: you should specific symbols by -d 'symbols=<symbol>,<symbol>'");
+        cout << StringUtils::format("Error: you should specific symbols by -d 'symbols=<symbol>,<symbol>' or 'symbols=*'");
         cout << termcolor::reset << endl;
         return 1;
     }
     
     string symbolsExpr = options["symbols"];
-    vector<string> allSymbols = StringUtils::split(symbolsExpr, ',');
-    set<string> symbols(allSymbols.begin(), allSymbols.end());
+    set<string> symbols;
+    if (symbolsExpr == "*") {
+        for (auto it = symbol2proto.begin(); it != symbol2proto.end(); it++) {
+            symbols.insert(it->first);
+        }
+    } else {
+        vector<string> allSymbols = StringUtils::split(symbolsExpr, ',');
+        set<string> _symbols(allSymbols.begin(), allSymbols.end());
+        symbols = _symbols;
+    }
+    
+    // setup recordPath
+    string graphPath = StringUtils::path_join(outputPath, fileName + "_wrapper-graph.iblessing.txt");
     
     printf("  [*] try to find wrappers for");
     bool first = true;
@@ -111,13 +134,15 @@ int SymbolWrapperScanner::start() {
     char progressChars[] = {'\\', '|', '/', '-'};
     uint8_t progressCur = 0;
 #if 0
-    uint64_t stub = 0x1000221A8;
+    uint64_t stub = 0x10038436C;
     codeData = codeData + stub - startAddr;
     startAddr = stub;
 #endif
     
     SymbolTable *symtab = SymbolTable::getInstance();
     bool hasMemLoader = false;
+    funcStartCursor = startAddr;
+    AntiWrapperRegLinkGraph currentGraph;
     disasm->startDisassembly(codeData, startAddr, [&](bool success, cs_insn *insn, bool *stop, ARM64PCRedirect **redirect) {
         if (insn->address >= endAddr) {
             printf("\n\t[*] reach to end of __text, stop\n");
@@ -151,10 +176,22 @@ int SymbolWrapperScanner::start() {
         // 1. mark B / RET / BRK as return
         // 2. short expr, scan objc_msgSend first, and trace back to return, find head (not more than 10 ins)
         // 3. go forward to objc_msgSend, record register transform
-        if (ARM64Runtime::isRET(insn) || strcmp(insn->mnemonic, "brk") == 0) {
+        if (strcmp(insn->mnemonic, "ret") == 0 ||
+            strcmp(insn->mnemonic, "brk") == 0) {
             funcStartCursor = insn->address + 4;
             hasMemLoader = false;
+            AntiWrapperRegLinkGraph newGraph;
+            currentGraph = newGraph;
             return;
+        }
+        
+        // handle mov actions
+        if (strcmp(insn->mnemonic, "mov") == 0) {
+            // MOV <Xd>, <Xm>
+            cs_arm64 detail = insn[0].detail->arm64;
+            cs_arm64_op src = detail.operands[0];
+            cs_arm64_op dst = detail.operands[1];
+            currentGraph.createLink(src, dst);
         }
         
         // record objc_msgSend, skip all bl
@@ -169,6 +206,7 @@ int SymbolWrapperScanner::start() {
                     block.symbolName = symbol->name;
                     block.startAddr = funcStartCursor;
                     block.endAddr = insn->address;
+                    block.regLinkGraph = currentGraph;
                     block.transformer = [&](AntiWrapperBlock block, AntiWrapperArgs args) {
                         pthread_mutex_lock(&wrapperLock);
                         uc_context_restore(uc, ctx);
@@ -212,6 +250,10 @@ int SymbolWrapperScanner::start() {
                 // it is return anyway
                 funcStartCursor = insn->address + 4;
                 hasMemLoader = false;
+                {
+                    AntiWrapperRegLinkGraph newGraph;
+                    currentGraph = newGraph;
+                }
             }
         }
         
@@ -244,6 +286,12 @@ int SymbolWrapperScanner::start() {
     args = antiWrapper.performWrapperTransform(wrapperAddr, args);
     printf("the x0 0x%llx, x1 0x%llx\n", args.x[0], args.x[1]);
 #endif
-
+    
+    printf("\n  [*] Step 3. serialize wrapper graph to file\n");
+    if (SymbolWrapperSerializationManager::createReportFromAntiWrapper(graphPath, antiWrapper, symbol2proto)) {
+        printf("\t[*] saved to %s\n", graphPath.c_str());
+    } else {
+        printf("\t[*] error: cannot save to path %s\n", graphPath.c_str());
+    }
     return 0;
 }

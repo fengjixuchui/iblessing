@@ -12,6 +12,7 @@
 #include "vendor/termcolor/termcolor.h"
 #include "scanner/ScannerDispatcher.hpp"
 #include "generator/GeneratorDispatcher.hpp"
+#include "platform/macos/csrutil.hpp"
 
 using namespace std;
 using namespace argparse;
@@ -30,8 +31,12 @@ int main(int argc, const char *argv[]) {
            \n");
     
     // hello text
-    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 0.1.1 (http://blog.asm.im)\n");
-    printf("[***] Author: Soulghost (高级页面仔) @ (https://github.com/Soulghost)\n\n");
+    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 0.2.0.2 (http://blog.asm.im)\n");
+    printf("[***] Author: Soulghost (高级页面仔) @ (https://github.com/Soulghost)\n");
+    if (CSRUtil::isSIPon()) {
+        printf("[***] System Integrity Protection is on\n");
+    }
+    printf("\n");
     
     // parse args
     ArgumentParser parser("iblessing", "iblessing iOS security toolkit");
@@ -168,7 +173,11 @@ int main(int argc, const char *argv[]) {
             size_t size = pathconf(".", _PC_PATH_MAX);
             char *buf = (char *)malloc((size_t)size);
             char *path = getcwd(buf, (size_t)size);
-            outputFilePath = string(path);
+            if (path) {
+                outputFilePath = string(path);
+            } else {
+                outputFilePath = "/tmp";
+            }
             free(buf);
         }
         printf("[*] set output path to %s\n", outputFilePath.c_str());
