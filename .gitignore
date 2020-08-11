@@ -1,4 +1,11 @@
+# IDE
+.vscode/
+
+# CMake Build
+cmake-build/
+
 # Build Products
+*.o
 *.a
 *.dylib
 *.so

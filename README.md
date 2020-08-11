@@ -11,6 +11,7 @@
 - `iblessing` is based on [unicorn engine](https://github.com/unicorn-engine/unicorn) and [capstone engine](https://github.com/aquynh/capstone).
 
 # Features
+- [x] 🔥 Cross-platform: Tested on macOS and Ubuntu.
 - [x] iOS App static info extract, including metadata, deeplinks, urls, etc.
 - [x] Mach-O parser and dyld symbol bind simulator
 - [x] Objective-C class realizing and parsing
@@ -43,6 +44,7 @@ In case you need support regarding iblessing or anything associated with it, you
 - send mail to xiuyutong1994#gmail.com
 
 # Changelog
+- 2020.08.11 - Now iblessing is a cross-platform tool, support both macOS and Linux 😆
 - 2020.08.08 - Improve objc_msgSend xref scanner, add sub xref supoort, including block arguments and capture list
 - 2020.07.30 - Improve symbol-wrapper scanner, and add ida scripts for symbol wrapper rename and prototype modification
 - 2020.07.21 - First release 
@@ -52,6 +54,27 @@ In case you need support regarding iblessing or anything associated with it, you
 1. You can download the [pre-released iblessing binary](https://github.com/Soulghost/iblessing/releases) and enjoy it.
 2. run chmod +x for the binary
 3. For more tutorails, please check the [Documentation & Help](https://github.com/Soulghost/iblessing#documentation--help) below.
+
+# How to Build
+## CMake
+- Platform: macOS, Linux
+
+To get started compiling iblessing, please follow the steps below:
+```
+git clone --recursive -j4 https://github.com/Soulghost/iblessing
+cd iblessing
+./compile-cmake.sh
+```
+
+## XcodeBuild
+- Platform: macOS
+
+To get started compiling iblessing, please follow the steps below:
+```
+git clone --recursive -j4 https://github.com/Soulghost/iblessing
+cd iblessing
+./compile.sh
+```
 
 ## Shortcuts
 - [Basic Concepts](https://github.com/Soulghost/iblessing#basic-concepts)
@@ -65,16 +88,6 @@ In case you need support regarding iblessing or anything associated with it, you
   - [Generate objc_msgSend Xrefs Query Server](https://github.com/Soulghost/iblessing#generate-objc_msgsend-xrefs-query-server)
   - [Generate IDA Scripts for objc_msgSend xrefs](https://github.com/Soulghost/iblessing#generate-ida-scripts-for-objc_msgsend-xrefs)
   - :new: [Generate IDA Scripts for objc function wrapper rename and prototype modification](https://github.com/Soulghost/iblessing/blob/features/anti_wrapper/README.md#genereate-ida-script-for-objc-runtime-function-rename-and-prototype-modification)
-
-# How to Compile
-- Platform: macOS Only (Will support linux in the future)
-
-To get started compiling iblessing, please follow the steps below:
-```
-git clone https://github.com/Soulghost/iblessing
-cd iblessing
-sh compile.sh
-```
 
 ***If there are any errors, you can manully compile capstone and unicorn, then drag libcapstone.a and libunicorn.a to the Xcode project's vendor/libs.***
 

@@ -42,7 +42,6 @@
 		685CE82424C57131002CC5E8 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE82224C57130002CC5E8 /* StringUtils.cpp */; };
 		685CE84524C572A0002CC5E8 /* ObjcClassXrefScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE83924C572A0002CC5E8 /* ObjcClassXrefScanner.cpp */; };
 		685CE84624C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE83A24C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp */; };
-		685CE84724C572A0002CC5E8 /* AppInfoScanner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 685CE83B24C572A0002CC5E8 /* AppInfoScanner.mm */; };
 		685CE84824C572A0002CC5E8 /* Scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE83C24C572A0002CC5E8 /* Scanner.cpp */; };
 		685CE84924C572A0002CC5E8 /* SymbolWrapperScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE84024C572A0002CC5E8 /* SymbolWrapperScanner.cpp */; };
 		685CE84A24C572A0002CC5E8 /* PredicateScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE84124C572A0002CC5E8 /* PredicateScanner.cpp */; };
@@ -52,7 +51,10 @@
 		685CE85C24C57360002CC5E8 /* GeneratorDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE85724C57360002CC5E8 /* GeneratorDispatcher.cpp */; };
 		685CE85D24C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE85824C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp */; };
 		685CE88F24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE88D24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp */; };
+		6866173B24DFF93A00C4FBB3 /* mach-universal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6866173924DFF93A00C4FBB3 /* mach-universal.cpp */; };
 		68770C7124DAD45C003F9652 /* ObjcBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */; };
+		68770C9124E1118D003F9652 /* CocoaAppInfoScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */; };
+		68770C9424E1130A003F9652 /* AppInfoScanner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68770C9224E1130A003F9652 /* AppInfoScanner.mm */; };
 		68770C9C24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C9A24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp */; };
 		68A028C024DE7F9300077CE0 /* ScannerContextManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A028BE24DE7F9300077CE0 /* ScannerContextManager.cpp */; };
 		68A028C324DE80AB00077CE0 /* ScannerContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A028C124DE80AB00077CE0 /* ScannerContext.cpp */; };
@@ -144,14 +146,12 @@
 		685CE83724C572A0002CC5E8 /* PredicateScanner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PredicateScanner.hpp; sourceTree = "<group>"; };
 		685CE83924C572A0002CC5E8 /* ObjcClassXrefScanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcClassXrefScanner.cpp; sourceTree = "<group>"; };
 		685CE83A24C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodXrefScanner.cpp; sourceTree = "<group>"; };
-		685CE83B24C572A0002CC5E8 /* AppInfoScanner.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppInfoScanner.mm; sourceTree = "<group>"; };
 		685CE83C24C572A0002CC5E8 /* Scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scanner.cpp; sourceTree = "<group>"; };
 		685CE83D24C572A0002CC5E8 /* ObjcClassXrefScanner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ObjcClassXrefScanner.hpp; sourceTree = "<group>"; };
 		685CE83E24C572A0002CC5E8 /* ObjcMethodXrefScanner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ObjcMethodXrefScanner.hpp; sourceTree = "<group>"; };
 		685CE83F24C572A0002CC5E8 /* Scanner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Scanner.hpp; sourceTree = "<group>"; };
 		685CE84024C572A0002CC5E8 /* SymbolWrapperScanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolWrapperScanner.cpp; sourceTree = "<group>"; };
 		685CE84124C572A0002CC5E8 /* PredicateScanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PredicateScanner.cpp; sourceTree = "<group>"; };
-		685CE84324C572A0002CC5E8 /* AppInfoScanner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AppInfoScanner.hpp; sourceTree = "<group>"; };
 		685CE84D24C572D4002CC5E8 /* AntiWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AntiWrapper.cpp; sourceTree = "<group>"; };
 		685CE84E24C572D4002CC5E8 /* AntiWrapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AntiWrapper.hpp; sourceTree = "<group>"; };
 		685CE85124C57308002CC5E8 /* ObjcMethodChain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodChain.cpp; sourceTree = "<group>"; };
@@ -202,8 +202,14 @@
 		685CE88824C57390002CC5E8 /* stdint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdint.h; sourceTree = "<group>"; };
 		685CE88D24C68933002CC5E8 /* ObjcMethodChainSerializationManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodChainSerializationManager.cpp; sourceTree = "<group>"; };
 		685CE88E24C68933002CC5E8 /* ObjcMethodChainSerializationManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMethodChainSerializationManager.hpp; sourceTree = "<group>"; };
+		6866173924DFF93A00C4FBB3 /* mach-universal.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "mach-universal.cpp"; sourceTree = "<group>"; };
+		6866173A24DFF93A00C4FBB3 /* mach-universal.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "mach-universal.hpp"; sourceTree = "<group>"; };
 		68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcBlock.cpp; sourceTree = "<group>"; };
 		68770C7024DAD45C003F9652 /* ObjcBlock.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcBlock.hpp; sourceTree = "<group>"; };
+		68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CocoaAppInfoScanner.cpp; sourceTree = "<group>"; };
+		68770C9024E1118D003F9652 /* CocoaAppInfoScanner.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CocoaAppInfoScanner.hpp; sourceTree = "<group>"; };
+		68770C9224E1130A003F9652 /* AppInfoScanner.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppInfoScanner.mm; sourceTree = "<group>"; };
+		68770C9324E1130A003F9652 /* AppInfoScanner.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppInfoScanner.hpp; sourceTree = "<group>"; };
 		68770C9A24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMsgXREFReportGenerator.cpp; sourceTree = "<group>"; };
 		68770C9B24E17212003F9652 /* ObjcMsgXREFReportGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMsgXREFReportGenerator.hpp; sourceTree = "<group>"; };
 		68A028BE24DE7F9300077CE0 /* ScannerContextManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ScannerContextManager.cpp; sourceTree = "<group>"; };
@@ -377,6 +383,7 @@
 		685CE7E224C57079002CC5E8 /* mach-o */ = {
 			isa = PBXGroup;
 			children = (
+				6866173724DFF8E800C4FBB3 /* polyfill */,
 				682962E124CD48F100EF9251 /* structs */,
 				685CE7E324C57079002CC5E8 /* symtab */,
 				685CE7EA24C57079002CC5E8 /* memory */,
@@ -519,6 +526,8 @@
 				68A028C824DE894B00077CE0 /* dispatcher */,
 				68A028C424DE821F00077CE0 /* common */,
 				68A028BD24DE7F8000077CE0 /* context */,
+				685CE83F24C572A0002CC5E8 /* Scanner.hpp */,
+				685CE83C24C572A0002CC5E8 /* Scanner.cpp */,
 				685CE83624C572A0002CC5E8 /* SymbolWrapperScanner.hpp */,
 				685CE84024C572A0002CC5E8 /* SymbolWrapperScanner.cpp */,
 				685B5B8D24D6711E00C30CFD /* SymbolXREFScanner.hpp */,
@@ -526,13 +535,13 @@
 				685CE83E24C572A0002CC5E8 /* ObjcMethodXrefScanner.hpp */,
 				685CE83A24C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp */,
 				685CE83724C572A0002CC5E8 /* PredicateScanner.hpp */,
-				685CE83924C572A0002CC5E8 /* ObjcClassXrefScanner.cpp */,
-				685CE83B24C572A0002CC5E8 /* AppInfoScanner.mm */,
-				685CE83C24C572A0002CC5E8 /* Scanner.cpp */,
-				685CE83D24C572A0002CC5E8 /* ObjcClassXrefScanner.hpp */,
-				685CE83F24C572A0002CC5E8 /* Scanner.hpp */,
 				685CE84124C572A0002CC5E8 /* PredicateScanner.cpp */,
-				685CE84324C572A0002CC5E8 /* AppInfoScanner.hpp */,
+				685CE83D24C572A0002CC5E8 /* ObjcClassXrefScanner.hpp */,
+				685CE83924C572A0002CC5E8 /* ObjcClassXrefScanner.cpp */,
+				68770C9024E1118D003F9652 /* CocoaAppInfoScanner.hpp */,
+				68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */,
+				68770C9324E1130A003F9652 /* AppInfoScanner.hpp */,
+				68770C9224E1130A003F9652 /* AppInfoScanner.mm */,
 			);
 			path = scanner;
 			sourceTree = "<group>";
@@ -671,6 +680,15 @@
 				6829632224D052AF00EF9251 /* SymbolWrapperSerializationManager.hpp */,
 			);
 			path = serialization;
+			sourceTree = "<group>";
+		};
+		6866173724DFF8E800C4FBB3 /* polyfill */ = {
+			isa = PBXGroup;
+			children = (
+				6866173924DFF93A00C4FBB3 /* mach-universal.cpp */,
+				6866173A24DFF93A00C4FBB3 /* mach-universal.hpp */,
+			);
+			path = polyfill;
 			sourceTree = "<group>";
 		};
 		68A028BD24DE7F8000077CE0 /* context */ = {
@@ -876,6 +894,7 @@
 				6829632324D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp in Sources */,
 				682962E424CD490E00EF9251 /* Foundation.cpp in Sources */,
 				685CE81724C57079002CC5E8 /* ObjcObject.cpp in Sources */,
+				68770C9124E1118D003F9652 /* CocoaAppInfoScanner.cpp in Sources */,
 				685CE85324C57309002CC5E8 /* ObjcMethodChain.cpp in Sources */,
 				685CE84824C572A0002CC5E8 /* Scanner.cpp in Sources */,
 				685CE7DB24C56E8B002CC5E8 /* main.cpp in Sources */,
@@ -896,8 +915,8 @@
 				6829631D24D0460500EF9251 /* FunctionPrototype.cpp in Sources */,
 				685CE81124C57079002CC5E8 /* DyldSimulator.cpp in Sources */,
 				68A028CB24DE897F00077CE0 /* ScannerDispatcher.cpp in Sources */,
-				685CE84724C572A0002CC5E8 /* AppInfoScanner.mm in Sources */,
 				685CE85C24C57360002CC5E8 /* GeneratorDispatcher.cpp in Sources */,
+				68770C9424E1130A003F9652 /* AppInfoScanner.mm in Sources */,
 				685CE85B24C57360002CC5E8 /* Generator.cpp in Sources */,
 				685CE80E24C57079002CC5E8 /* ARM64Registers.cpp in Sources */,
 				685CE81824C57079002CC5E8 /* UnicornARM64Runtime.cpp in Sources */,
@@ -909,6 +928,7 @@
 				685CE81224C57079002CC5E8 /* ARM64Runtime.cpp in Sources */,
 				685CE82424C57131002CC5E8 /* StringUtils.cpp in Sources */,
 				685CE80A24C57079002CC5E8 /* StringTable.cpp in Sources */,
+				6866173B24DFF93A00C4FBB3 /* mach-universal.cpp in Sources */,
 				68770C7124DAD45C003F9652 /* ObjcBlock.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1125,7 +1145,7 @@
 				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = K46WQ32REC;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
 				DSTROOT = "${SRCROOT}/../build";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1153,7 +1173,7 @@
 				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = K46WQ32REC;
+				DEVELOPMENT_TEAM = 6CMYQQFFT8;
 				DSTROOT = "${SRCROOT}/../build";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = "";

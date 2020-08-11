@@ -7,12 +7,15 @@
 //
 
 #include <cstdio>
-#include "util/StringUtils.h"
-#include "vendor/argparse/argparse.h"
-#include "vendor/termcolor/termcolor.h"
-#include "scanner/dispatcher/ScannerDispatcher.hpp"
-#include "generator/GeneratorDispatcher.hpp"
-#include "platform/macos/csrutil.hpp"
+#include "StringUtils.h"
+#include "argparse.h"
+#include "termcolor.h"
+#include "ScannerDispatcher.hpp"
+#include "GeneratorDispatcher.hpp"
+
+#ifdef IB_CSR_ENABLED
+#include "csrutil.hpp"
+#endif
 
 using namespace std;
 using namespace argparse;
@@ -31,11 +34,15 @@ int main(int argc, const char *argv[]) {
            \n");
     
     // hello text
-    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 0.2.1.6 (http://blog.asm.im)\n");
+    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 0.2.2.1 (http://blog.asm.im)\n");
     printf("[***] Author: Soulghost (高级页面仔) @ (https://github.com/Soulghost)\n");
+
+#ifdef IB_CSR_ENABLED
     if (CSRUtil::isSIPon()) {
         printf("[***] System Integrity Protection is on\n");
     }
+#endif
+
     printf("\n");
     
     // parse args
