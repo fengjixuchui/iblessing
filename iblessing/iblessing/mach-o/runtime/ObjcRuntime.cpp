@@ -42,6 +42,14 @@ ObjcClassRuntimeInfo* ObjcRuntime::getClassInfoByAddress(uint64_t address) {
     return info;
 }
 
+bool ObjcRuntime::isClassObjectAtAddress(uint64_t address) {
+    return address2RuntimeInfo.find(address) != address2RuntimeInfo.end();
+}
+
+bool ObjcRuntime::isValidClassInfo(ObjcClassRuntimeInfo *info) {
+    return runtimeInfo2address.find(info) != runtimeInfo2address.end();
+}
+
 void ObjcRuntime::loadClassList(uint64_t vmaddr, uint64_t size) {
     VirtualMemory *vm = VirtualMemory::progressDefault();
     uint64_t *classAddrs = (uint64_t *)vm->readBySize(vmaddr, size);
@@ -67,6 +75,14 @@ uint64_t ObjcRuntime::getClassAddrByName(string className) {
         return classList[className];
     }
     return 0;
+}
+
+ObjcClassRuntimeInfo* ObjcRuntime::getClassInfoByName(std::string className) {
+    uint64_t addr = getClassAddrByName(className);
+    if (!addr) {
+        return nullptr;
+    }
+    return getClassInfoByAddress(addr);
 }
 
 ObjcClassRuntimeInfo* ObjcRuntime::evalReturnForIvarGetter(ObjcClassRuntimeInfo *targetClass, std::string getterSEL) {

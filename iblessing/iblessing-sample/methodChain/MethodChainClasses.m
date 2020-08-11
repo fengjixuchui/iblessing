@@ -30,6 +30,10 @@
     
 }
 
++ (void)rootClassMethodCallFromSub {
+    
+}
+
 @end
 
 
@@ -45,6 +49,22 @@
 
 + (void)testInstanceCallToRootClassMethodAncestor {
     [[[[IBSRoot alloc] init] class] rootClassMethodCallFromInstanceClass];
+}
+
+- (void)testCallFromSub {
+    void (^sub)(void) = ^ {
+        [IBSRoot rootClassMethodCallFromSub];
+    };
+    sub();
+    
+    [@[@1, @2, @3] enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [IBSRoot rootClassMethodCallFromSub];
+    }];
+    
+    self.ivarBlock = [^{
+        [IBSRoot rootClassMethodCallFromSub];
+    } copy];
+    self.ivarBlock();
 }
 
 - (void)testSelfCall {
@@ -74,6 +94,35 @@
 
 - (void)testIvarCall {
     [self.root rootInstanceMethodCallFromIvar];
+}
+
+- (void)localStackBlockInovker:(void (^)(BlockSubA *sub))callback {
+    callback([BlockSubA new]);
+}
+
+- (void)testSelfCapture {
+    
+}
+
+- (void)testLocalBlockOnStack {
+    BlockSubA *allocateCapture = [BlockSubA new];
+    [self localStackBlockInovker:^(BlockSubA *sub) {
+        [allocateCapture testAllocateCapture];
+        [self testSelfCapture];
+        [sub testCallFromBlockArg];
+    }];
+}
+
+@end
+
+@implementation BlockSubA
+
+- (void)testAllocateCapture {
+    
+}
+
+- (void)testCallFromBlockArg {
+    
 }
 
 @end
