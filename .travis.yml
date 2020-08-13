@@ -1,0 +1,16 @@
+language: cpp
+sudo: false
+
+git:
+  submodules: true
+
+script:
+  - ./compile-cmake.sh
+  
+compiler:
+  - clang
+  - gcc
+  
+os:
+  - linux
+  - osx
