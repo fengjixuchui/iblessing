@@ -53,11 +53,11 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-j"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-m"
@@ -65,18 +65,22 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "scan"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "generator"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "test"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-i"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "symbol-xref"
+            argument = "ida-symbolic"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
@@ -109,15 +113,15 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-d"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&apos;delimiter=|;addrIdx=0;nameIdx=1&apos;"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&apos;symbols=_objc_msgSend&apos;"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "&apos;unprintable=1&apos;"
-            isEnabled = "NO">
+            argument = "&apos;mode=jtool2&apos;"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&apos;diff=/Users/soulghost/Desktop/git/iblessing/iblessing/build/Debug/new1/Chrome_method-xrefs.iblessing.txt&apos;"

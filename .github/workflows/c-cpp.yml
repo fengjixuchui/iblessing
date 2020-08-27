@@ -23,5 +23,5 @@ jobs:
       with:
         submodules: true
     - name: cmake
-      run: ./compile-cmake.sh
+      run: ./compile-cmake.sh && ./run-test.sh
 

@@ -169,31 +169,33 @@ static void finishBlockSession(EngineContext *ctx, uc_engine *uc) {
         uint64_t sigAddr = 0;
         if (UC_ERR_OK == uc_mem_read(uc, ctx->blockDescAddr + signatureOffsetInDesc, &sigAddr, 8)) {
             char *signature = vm2->readString(sigAddr, 1000);
-            vector<string> args = CoreFoundation::argumentsFromSignature(signature);
-            // args[0] is return value
-            for (int i = 1; i < args.size(); i++) {
-                string &arg = args[i];
-                if (i == 1) {
-                    block->commonBlock = (arg == "@?");
-                } else if (StringUtils::has_prefix(arg, "@")) {
-                    BlockVariable *blockVar = new BlockVariable();
-                    if (arg.size() > 1) {
-                        string className = arg.substr(1);
-                        ObjcClassRuntimeInfo *classInfo = rt->getClassInfoByName(className);
-                        if (classInfo) {
-                            blockVar->type = BlockVariableTypeObjcClass;
-                            blockVar->classInfo = classInfo;
+            if (signature) {
+                vector<string> args = CoreFoundation::argumentsFromSignature(signature);
+                // args[0] is return value
+                for (int i = 1; i < args.size(); i++) {
+                    string &arg = args[i];
+                    if (i == 1) {
+                        block->commonBlock = (arg == "@?");
+                    } else if (StringUtils::has_prefix(arg, "@")) {
+                        BlockVariable *blockVar = new BlockVariable();
+                        if (arg.size() > 1) {
+                            string className = arg.substr(1);
+                            ObjcClassRuntimeInfo *classInfo = rt->getClassInfoByName(className);
+                            if (classInfo) {
+                                blockVar->type = BlockVariableTypeObjcClass;
+                                blockVar->classInfo = classInfo;
+                            } else {
+                                blockVar->type = BlockVariableTypeUnknown;
+                            }
                         } else {
                             blockVar->type = BlockVariableTypeUnknown;
                         }
+                        block->args.push_back(blockVar);
                     } else {
+                        BlockVariable *blockVar = new BlockVariable();
                         blockVar->type = BlockVariableTypeUnknown;
+                        block->args.push_back(blockVar);
                     }
-                    block->args.push_back(blockVar);
-                } else {
-                    BlockVariable *blockVar = new BlockVariable();
-                    blockVar->type = BlockVariableTypeUnknown;
-                    block->args.push_back(blockVar);
                 }
             }
         }
@@ -212,10 +214,10 @@ static void captureBlockElement(cs_insn *lastInsn, EngineContext *ctx, uint64_t 
     if (op.type == ARM64_OP_MEM) {
         arm64_reg base = op.mem.base;
         int32_t disp = op.mem.disp;
-        uint64_t sp = 0;
-        if (base == ARM64_REG_SP &&
-            UC_ERR_OK == uc_reg_read(ctx->engine, UC_ARM64_REG_SP, &sp)) {
-            uint64_t targetAddr = sp + disp;
+        uint64_t xn = 0;
+        if ((base == ARM64_REG_SP || base == ARM64_REG_X29) &&
+            UC_ERR_OK == uc_reg_read(ctx->engine, base, &xn)) {
+            uint64_t targetAddr = xn + disp;
             if (targetAddr == ctx->blockIsaAddr + 0x8) {
 //                printf("\t[~] find block flags at 0x%llx, value 0x%llx\n", targetAddr, xn);
                 uc_mem_read(uc, targetAddr, &ctx->blockFlags, 4);
@@ -254,10 +256,10 @@ static void startBlockSession(EngineContext *ctx, uc_engine *uc, cs_insn *insn) 
     if (op.type == ARM64_OP_MEM) {
         arm64_reg base = op.mem.base;
         int32_t disp = op.mem.disp;
-        uint64_t sp = 0;
-        if (base == ARM64_REG_SP &&
-            UC_ERR_OK == uc_reg_read(ctx->engine, UC_ARM64_REG_SP, &sp)) {
-            uint64_t blockAddr = sp + disp;
+        uint64_t xn = 0;
+        if ((base == ARM64_REG_SP || base == ARM64_REG_X29) &&
+            UC_ERR_OK == uc_reg_read(ctx->engine, base, &xn)) {
+            uint64_t blockAddr = xn + disp;
 //            printf("\n\t[~] find block build prologue at 0x%llx, block address on stack 0x%llx\n", ctx->lastInsn->address, blockAddr);
             
             ctx->isInBlockBuilder = true;
@@ -345,7 +347,8 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
     if (ctx->lastInsn) {
         // block capture, method only
         if (!ctx->currentMethod->classInfo->isSub &&
-            strcmp(ctx->lastInsn->mnemonic, "str") == 0) {
+            (strcmp(ctx->lastInsn->mnemonic, "str")  == 0 ||
+             strcmp(ctx->lastInsn->mnemonic, "stur") == 0)) {
             cs_arm64 detail = ctx->lastInsn->detail->arm64;
             uint64_t xn = 0;
             if (detail.operands[0].reg != ARM64_REG_INVALID &&
@@ -434,7 +437,7 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
                 bool success = false;
                 uint64_t classData = vm2->read64(x0, &success);
                 if (success && classData) {
-                    ObjcClassRuntimeInfo *classInfo = rt->getClassInfoByAddress(x0);
+                    ObjcClassRuntimeInfo *classInfo = rt->getClassInfoByAddress(x0, false);
                     if (classInfo) {
                         uint64_t encodedAddr = classInfo->address | HeapInstanceTrickMask;
                         pthread_mutex_lock(&indexMutex);

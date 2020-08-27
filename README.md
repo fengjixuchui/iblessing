@@ -7,6 +7,7 @@
            ╚═╝╚═════╝ ╚══════╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝
 
 [![Build Status](https://travis-ci.org/aquynh/capstone.svg?branch=master)](https://travis-ci.org/Soulghost/iblessing)
+[![Releases](https://img.shields.io/github/v/release/Soulghost/iblessing?include_prereleases)](https://github.com/Soulghost/iblessing/releases)
 
 # iblessing
 - `iblessing` is an iOS security exploiting toolkit, it mainly includes **application information collection**, **static analysis** and **dynamic analysis**.
@@ -21,8 +22,8 @@
 - [x] Scanners using unicorn to partially simulate Mach-O arm64 code execution and find some features
 - [x] Generators that can provide secondary processing on scanner's report to start a query server, or generate script for IDA
 
-- Super objc_msgSend Xrefs Scanner 😄
-    - [x] objc method and subs (such as block) emulation to generate xrefs like flare-emu
+- Super objc_msgSend xrefs scanner 😄
+    - [x] objc methods and subs (such as blocks) emulation to generate xrefs like flare-emu
     - [x] objc function wrapper detect and ida usercall generate
     - [x] objc_msgSend sub functions analysis
     - [x] objc block to objc_msgSend xrefs in args and capture list
@@ -36,9 +37,6 @@
 - [ ] Cross-platform
 
 # Support 
-***unicorn may crash (segment fault or bus error) on some computers, I am trying to solve this problem.***
-***If you encounter any problems, you can contact me, thank you***
-
 In case you need support regarding iblessing or anything associated with it, you can:
 - create an issue and provide necessary information
 - contact [Sou1gh0st](https://twitter.com/Sou1gh0st) on Twitter 

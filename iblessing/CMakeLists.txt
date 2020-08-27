@@ -100,6 +100,9 @@ set(iblessing.SOURCE_INCLUDES
 
     # domain
     iblessing/domain
+
+    # tests
+    iblessing/tests
 )
 
 if (iblessing.CSR_ENABLED)
@@ -156,6 +159,7 @@ set(iblessing.SOURCE_LIST
     iblessing/scanner/SymbolXREFScanner.cpp
     iblessing/scanner/SymbolWrapperScanner.cpp
     iblessing/scanner/PredicateScanner.cpp
+    iblessing/scanner/ObjcUnserializationScanner.cpp
 
     # generator
     iblessing/generator/Generator.cpp
@@ -165,6 +169,7 @@ set(iblessing.SOURCE_LIST
     iblessing/generator/ObjcMsgXREFServerGenerator.cpp
     iblessing/generator/ObjcMsgXREFStatisticsGenerator.cpp
     iblessing/generator/ObjcMsgXREFReportGenerator.cpp
+    iblessing/generator/IDASymbolicScriptGenerator.cpp
 
     # serialization
     iblessing/serialization/ObjcMethodChainSerializationManager.cpp
@@ -176,6 +181,11 @@ set(iblessing.SOURCE_LIST
 
     # domain
     iblessing/domain/ObjcMethodChain.cpp
+
+    # test
+    iblessing/tests/Tester.cpp
+    iblessing/tests/TestManager.cpp
+    iblessing/tests/TestObjcMethodXrefs.cpp
 )
 
 if (iblessing.CSR_ENABLED)
