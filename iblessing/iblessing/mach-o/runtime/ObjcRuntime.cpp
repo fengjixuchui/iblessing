@@ -7,7 +7,7 @@
 //
 
 #include "ObjcRuntime.hpp"
-#include "VirtualMemory.hpp"
+#include "VirtualMemoryV2.hpp"
 #include "SymbolTable.hpp"
 #include "termcolor.h"
 #include "StringUtils.h"
@@ -55,7 +55,7 @@ bool ObjcRuntime::isValidClassInfo(ObjcClassRuntimeInfo *info) {
 }
 
 void ObjcRuntime::loadClassList(uint64_t vmaddr, uint64_t size) {
-    VirtualMemory *vm = VirtualMemory::progressDefault();
+    VirtualMemoryV2 *vm = VirtualMemoryV2::progressDefault();
     uint64_t *classAddrs = (uint64_t *)vm->readBySize(vmaddr, size);
     uint64_t count = size / sizeof(void *);
     classList.clear();
@@ -96,4 +96,37 @@ ObjcClassRuntimeInfo* ObjcRuntime::evalReturnForIvarGetter(ObjcClassRuntimeInfo 
         return classAddr ? getClassInfoByAddress(classAddr) : nullptr;
     }
     return nullptr;
+}
+
+bool ObjcRuntime::isExistMethod(string methodPrefix, string classExpr, string detectedSEL) {
+    ObjcClassRuntimeInfo *classInfo = getClassInfoByName(classExpr);
+    if (!classInfo) {
+        // try external class
+        if (name2ExternalClassRuntimeInfo.find(classExpr) != name2ExternalClassRuntimeInfo.end()) {
+            return true;
+        }
+        return false;
+    }
+    
+    ObjcMethod *method = classInfo->getMethodBySEL(detectedSEL);
+    if (!method) {
+        return false;
+    }
+    
+    string validMethodPrefix = method->isClassMethod ? "+" : "-";
+    return validMethodPrefix == methodPrefix;
+}
+
+ObjcMethod* ObjcRuntime::inferNearestMethod(string methodPrefix, string classExpr, string detectedSEL) {
+    ObjcClassRuntimeInfo *classInfo = getClassInfoByName(classExpr);
+    if (!classInfo || classInfo->isExternal) {
+        return nullptr;
+    }
+    
+    ObjcMethod *method = classInfo->getMethodBySEL(detectedSEL);
+    if (!method || !method->classInfo) {
+        return nullptr;
+    }
+    
+    return method;
 }

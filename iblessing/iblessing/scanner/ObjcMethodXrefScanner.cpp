@@ -8,7 +8,6 @@
 
 #include "ObjcMethodXrefScanner.hpp"
 #include "ObjcRuntime.hpp"
-#include "VirtualMemory.hpp"
 #include "termcolor.h"
 #include "ARM64Runtime.hpp"
 #include "SymbolTable.hpp"
@@ -55,8 +54,24 @@ static SymbolWrapperScanner *antiWrapperScanner;
 static uc_hook insn_hook, mem_hook, memexp_hook;
 
 static map<string, MethodChain *> sel2chain;
+static set<string> trackSymbolBlacklist = {
+    "_objc_copyWeak", "_objc_moveWeak", "_objc_initWeak",
+    "_objc_loadWeak", "_objc_loadWeakRetained", "_objc_storeWeak",
+    "_objc_storeStrong", "_objc_autorelease",
+    "_objc_autoreleaseReturnValue", "_objc_retain", "_objc_release",
+    "_objc_retainAutorelease",
+    "_objc_retainAutoreleasedReturnValue", "_objc_retainAutoreleaseReturnValue",
+    "_objc_destroyWeak", "_objc_retainBlock",
+    "_objc_unsafeClaimAutoreleasedReturnValue", "_objc_releaseAndReturn",
+    "_objc_msgSend", "_objc_msgSendSuper", "_objc_msgSendSuper2",
+    "_objc_exception_throw",
+    "_objc_setProperty_nonatomic_copy",
+    "_objc_autoreleasePoolPush", "_objc_enumerationMutation"
+};
 
-static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1);
+static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1, int sendSuperType);
+static void trackSymbolCall(uc_engine *uc, ObjcMethod *currentMethod, Symbol *symbol);
+static bool shouldTrackSymbols = true;
 static void storeMethodChains();
 
 static bool isValidClassInfo(ObjcClassRuntimeInfo *info) {
@@ -480,8 +495,36 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
             }
             pthread_mutex_unlock(&indexMutex);
         }
-        if (symbol && strcmp(symbol->name.c_str(), "_objc_msgSend") == 0) {
+        
+        // FIXME: _objc_msgSendSuper, etc. detect
+        int sendSuperType = 0;
+        typedef enum {
+            ObjcMessageTypePlain = 0,
+            
+            // void objc_msgSend_stret(void *st_addr, id self, SEL _cmd, ...);
+            // void objc_msgSendSuper_stret(void *st_addr, struct objc_super *super, SEL _cmd, ...);
+            ObjcMessageTypeStret,
+            
+            // double objc_msgSend_fpret(id self, SEL _cmd, ...);
+            ObjcMessageTypeFpret,
+        } ObjcMessageType;
+        
+        ObjcMessageType msgType = ObjcMessageTypePlain;
+        if (symbol && strncmp(symbol->name.c_str(), "_objc_msgSend", strlen("_objc_msgSend")) == 0) {
             isMsgSendOrWrapper = true;
+            if (strncmp(symbol->name.c_str(), "_objc_msgSendSuper", strlen("_objc_msgSendSuper")) == 0) {
+                if (strncmp(symbol->name.c_str(), "_objc_msgSendSuper2", strlen("_objc_msgSendSuper2")) == 0) {
+                    sendSuperType = 2;
+                } else {
+                    sendSuperType = 1;
+                }
+            }
+            
+            if (StringUtils::has_suffix(symbol->name, "_fpret")) {
+                msgType = ObjcMessageTypeFpret;
+            } else if (StringUtils::has_suffix(symbol->name, "_stret")) {
+                msgType = ObjcMessageTypeStret;
+            }
         } else {
             if (antiWrapperScanner && antiWrapperScanner->antiWrapper.isWrappedCall(pc)) {
                 AntiWrapperArgs args;
@@ -505,21 +548,39 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
         
         if (isMsgSendOrWrapper) {
             uint64_t x0 = 0, x1 = 0;
-            if (uc_reg_read(uc, UC_ARM64_REG_X0, &x0) == UC_ERR_OK &&
-                uc_reg_read(uc, UC_ARM64_REG_X1, &x1) == UC_ERR_OK) {
+            uc_arm64_reg source0, source1;
+            switch (msgType) {
+                case ObjcMessageTypePlain:
+                case ObjcMessageTypeFpret:
+                    source0 = UC_ARM64_REG_X0;
+                    source1 = UC_ARM64_REG_X1;
+                    break;
+                case ObjcMessageTypeStret:
+                    source0 = UC_ARM64_REG_X1;
+                    source1 = UC_ARM64_REG_X2;
+            }
+            
+            if (uc_reg_read(uc, source0, &x0) == UC_ERR_OK &&
+                uc_reg_read(uc, source1, &x1) == UC_ERR_OK) {
                 pthread_mutex_lock(&traceRecordMutex);
 #ifdef DebugTrackCall
                 printf("[****] |--- 0x%llx\n", insn->address);
 #endif
                 // error at 0x00000001003b4884
-                trackCall(uc, ctx->currentMethod, x0, x1);
+                trackCall(uc, ctx->currentMethod, x0, x1, sendSuperType);
                 pthread_mutex_unlock(&traceRecordMutex);
             } else {
                 cout << termcolor::yellow;
                 cout << StringUtils::format("\t[+] failed to resolve objc_msgSend at 0x%llx\n", insn->address);
                 cout << termcolor::reset << endl;
             }
+        } else if (symbol &&
+                   trackSymbolBlacklist.find(symbol->name) == trackSymbolBlacklist.end()) {
+            pthread_mutex_lock(&traceRecordMutex);
+            trackSymbolCall(uc, ctx->currentMethod, symbol);
+            pthread_mutex_unlock(&traceRecordMutex);
         }
+        
         // jump to next ins
         pc = address + size;
         assert(uc_reg_write(uc, UC_ARM64_REG_PC, &pc) == UC_ERR_OK);
@@ -667,7 +728,6 @@ void trace_all_methods(vector<uc_engine *> engines, vector<ObjcMethod *> &method
 }
 
 uc_engine* createEngine(int identifier) {
-    VirtualMemory *vm = VirtualMemory::progressDefault();
     uc_engine *uc;
     uc_context *ctx;
     uc_err err = uc_open(UC_ARCH_ARM64, UC_MODE_ARM, &uc);
@@ -681,16 +741,7 @@ uc_engine* createEngine(int identifier) {
     uc_hook_add(uc, &mem_hook, UC_HOOK_MEM_VALID, (void *)mem_hook_callback, NULL, 1, 0);
     uc_hook_add(uc, &memexp_hook, UC_HOOK_MEM_INVALID, (void *)mem_exception_hook_callback, NULL, 1, 0);
     
-    // mapping 12GB memory region, first 4GB is PAGEZERO
-    // ALL       0x000000000 ~ 0x300000000
-    // PAGE_ZERO 0x000000000 ~ 0x100000000
-    // HEAP      0x100000000 ~ 0x300000000
-    // STACK     ?           ~ 0x300000000
-    uint64_t unicorn_vm_size = 12L * 1024 * 1024 * 1024;
-    uint64_t unicorn_vm_start = 0;
-    assert(uc_mem_map(uc, unicorn_vm_start, unicorn_vm_size, UC_PROT_ALL) == UC_ERR_OK);
-    // FIXME: failed condition
-    assert(uc_mem_write(uc, vm->vmaddr_base, vm->mappedFile, vm->mappedSize) == UC_ERR_OK);
+    VirtualMemoryV2::progressDefault()->mappingMachOToEngine(uc, nullptr);
     
     // setup default thread state
     assert(uc_context_alloc(uc, &ctx) == UC_ERR_OK);
@@ -730,10 +781,20 @@ int ObjcMethodXrefScanner::start() {
         engines.push_back(createEngine(i));
     }
     
+    bool shouldAntiWrapper = false;
+    if (options.find("antiWrapper") != options.end()) {
+        shouldAntiWrapper = atoi(options["antiWrapper"].c_str()) != 0;
+    }
+    
+    if (options.find("trackSymbols") != options.end()) {
+        shouldTrackSymbols = atoi(options["trackSymbols"].c_str()) != 0;
+    }
+    
+    printf("  [*] Status: Track C Symbols: %d, Anti Wrapper: %d\n", shouldTrackSymbols, shouldAntiWrapper);
+    
     printf("  [*] Step 1. realize all app classes\n");
     ObjcRuntime *rt = ObjcRuntime::getInstance();
     SymbolTable *symtab = SymbolTable::getInstance();
-    VirtualMemory *vm = VirtualMemory::progressDefault();
     unordered_map<string, uint64_t> &classList = rt->classList;
     uint64_t count = 0, total = classList.size();
 #if TinyTest
@@ -781,7 +842,7 @@ int ObjcMethodXrefScanner::start() {
     
     printf("  [*] Step 2. Start sub-scanners\n");
     ScannerDisassemblyDriver *sharedDriver = new ScannerDisassemblyDriver();
-    if (options.find("antiWrapper") != options.end()) {
+    if (shouldAntiWrapper) {
         ScannerDispatcher *dispatcher = reinterpret_cast<ScannerDispatcher *>(this->dispatcher);
         options["symbols"] = "_objc_msgSend";
         Scanner *s = dispatcher->prepareForScanner("symbol-wrapper", options, inputPath, outputPath, sharedDriver);
@@ -812,11 +873,12 @@ int ObjcMethodXrefScanner::start() {
     }
     
     printf("    [*] Dispatching Disassembly Driver\n");
-    struct ib_section_64 *textSect = vm->textSect;
+    VirtualMemoryV2 *vm2 = VirtualMemoryV2::progressDefault();
+    struct ib_section_64 *textSect = vm2->getTextSect();
     uint64_t startAddr = textSect->addr;
     uint64_t endAddr = textSect->addr + textSect->size;
     uint64_t addrRange = endAddr - startAddr;
-    uint8_t *codeData = vm->mappedFile + textSect->offset;
+    uint8_t *codeData = vm2->getMappedFile() + textSect->offset;
     string last_mnemonic = "";
     char progressChars[] = {'\\', '|', '/', '-'};
     uint8_t progressCur = 0;
@@ -863,7 +925,7 @@ int ObjcMethodXrefScanner::start() {
     delete sxrefScanner;
     
     printf("  [*] Step 4. dyld load non-lazy symbols\n");
-    DyldSimulator::eachBind(vm->mappedFile, vm->segmentHeaders, vm->dyldinfo, [&](uint64_t addr, uint8_t type, const char *symbolName, uint8_t symbolFlags, uint64_t addend, uint64_t libraryOrdinal, const char *msg) {
+    DyldSimulator::eachBind(vm2->getMappedFile(), vm2->getSegmentHeaders(), vm2->getDyldInfo(), [&](uint64_t addr, uint8_t type, const char *symbolName, uint8_t symbolFlags, uint64_t addend, uint64_t libraryOrdinal, const char *msg) {
         uint64_t symbolAddr = addr + addend;
         
         // load non-lazy symbols
@@ -883,6 +945,7 @@ int ObjcMethodXrefScanner::start() {
                 externalClassInfo->className = symbolName;
             }
             rt->externalClassRuntimeInfo[symbolAddr] = externalClassInfo;
+            rt->name2ExternalClassRuntimeInfo[externalClassInfo->className] = externalClassInfo;
             rt->runtimeInfo2address[externalClassInfo] = symbolAddr;
         } else if (strcmp(symbolName, "__NSConcreteGlobalBlock") == 0 ||
                    strcmp(symbolName, "__NSConcreteStackBlock") == 0) {
@@ -896,7 +959,6 @@ int ObjcMethodXrefScanner::start() {
         nl->n_value = symbolAddr;
         sym->info = nl;
         symtab->insertSymbol(sym);
-//        vm->writeBySize(new uint64_t(symbolAddr), symbolAddr, 8, MemoryUnit::MemoryType::Common);
     });
     
     // remove dupliate elements
@@ -931,7 +993,7 @@ int ObjcMethodXrefScanner::start() {
     return 0;
 }
 
-static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1) {
+static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1, int sendSuperType) {
     ObjcRuntime *rt = ObjcRuntime::getInstance();
     VirtualMemoryV2 *vm2 = VirtualMemoryV2::progressDefault();
     
@@ -956,6 +1018,32 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
     if (detectedSEL == NULL) {
         // FIXME: some bug
         return;
+    }
+    
+    // fixup x0 for super call
+    uint64_t receiverAddr = 0, currentOrSuperClassAddr = 0;
+    if (sendSuperType > 0) {
+#if 0
+        struct objc_super {
+            /// Specifies an instance of a class.
+            __unsafe_unretained _Nonnull id receiver;
+            __unsafe_unretained _Nonnull Class super_class;
+            /* super_class is the first class to search */
+        };
+        
+        struct objc_super2 {
+            id receiver;
+            Class current_class;
+        };
+#endif
+        uc_mem_read(uc, x0, &receiverAddr, 8);
+        uc_mem_read(uc, x0 + 8, &currentOrSuperClassAddr, 8);
+        if (receiverAddr != 0) {
+            x0 = receiverAddr;
+        } else {
+            // bad super strcut
+            sendSuperType = 0;
+        }
     }
     
     if (x0) {
@@ -1003,8 +1091,23 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
     }
     
     // detected classInfo validation
-    if (!isValidClassInfo(detectedClassInfo)) {
+    if (detectedClassInfo && !isValidClassInfo(detectedClassInfo)) {
         detectedClassInfo = nullptr;
+    }
+    
+    if (sendSuperType > 0 && detectedClassInfo) {
+        // sanity check
+        ObjcClassRuntimeInfo *superInfo = detectedClassInfo->superClassInfo;
+        if (superInfo) {
+            if (sendSuperType == 1) {
+                uint64_t superClassAddr = currentOrSuperClassAddr;
+                if (superInfo->address == superClassAddr) {
+                    detectedClassInfo = superInfo;
+                }
+            } else {
+                detectedClassInfo = superInfo;
+            }
+        }
     }
     
     // deprecated, replaced by objc_opt_class
@@ -1049,7 +1152,18 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
         }
     }
     
-    // indexing
+    // validate class & sel or find similar one
+    if (!rt->isExistMethod(methodPrefix, classExpr, detectedSEL)) {
+        // try to infer one
+        ObjcMethod *inferredMethod = rt->inferNearestMethod(methodPrefix, classExpr, detectedSEL);
+        if (inferredMethod) {
+            methodPrefix = inferredMethod->isClassMethod ? "+" : "-";
+            classExpr = inferredMethod->classInfo->className;
+            detectedSEL = inferredMethod->name.c_str();
+        } else {
+//            printf("    [-] Warn: skip %s[%s %s]\n", methodPrefix, classExpr.c_str(), detectedSEL);
+        }
+    }
     
 #if 0
     // 1. [methods] <-> method <-> [methods]
@@ -1138,6 +1252,57 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
 #if ShowFullLog
     printf("[+] find trace %s (0x%llx) -> %s (0x%llx)\n", currentMethodExpr.c_str(), currentChain->impAddr, followingMethodExpr.c_str(), followingChain->impAddr);
 #endif
+}
+
+static void trackSymbolCall(uc_engine *uc, ObjcMethod *currentMethod, Symbol *symbol) {
+    if (!shouldTrackSymbols) {
+        return;
+    }
+    
+    string methodPrefix = "+";
+    string className = "iblessing_ImportSymbol";
+    string detectedSEL = symbol->name.c_str();
+    
+    string currentMethodExpr = StringUtils::format("%s[%s %s]",
+                                                   currentMethod->isClassMethod ? "+" : "-",
+                                                   currentMethod->classInfo->className.c_str(),
+                                                   currentMethod->name.c_str()
+                                                   );
+    string followingMethodExpr = StringUtils::format("%s[%s %s]",
+                                                     methodPrefix.c_str(),
+                                                     className.c_str(),
+                                                     detectedSEL.c_str()
+                                                     );
+    
+    // add current method to chain if needed
+    // FIXME: a sub call can only be root chain (currentMethod) now
+    if (sel2chain.find(currentMethodExpr) == sel2chain.end()) {
+        MethodChain *chain = new MethodChain();
+        chain->impAddr = currentMethod->imp;
+        chain->prefix = currentMethod->isClassMethod ? "+" : "-";
+        chain->className = currentMethod->classInfo->className;
+        chain->methodName = currentMethod->name;
+        sel2chain[currentMethodExpr] = chain;
+    }
+    
+    // add following method to chain if needed
+    if (sel2chain.find(followingMethodExpr) == sel2chain.end()) {
+        MethodChain *chain = new MethodChain();
+        chain->prefix = methodPrefix;
+        chain->impAddr = symbol->info->n_value;
+        chain->className = className;
+        chain->methodName = detectedSEL;
+        sel2chain[followingMethodExpr] = chain;
+    }
+    
+    // caller pc (xref pc)
+    uint64_t pc = 0;
+    uc_reg_read(uc, UC_ARM64_REG_PC, &pc);
+    
+    MethodChain *currentChain = sel2chain[currentMethodExpr];
+    MethodChain *followingChain = sel2chain[followingMethodExpr];
+    currentChain->nextMethods.insert({followingChain, pc});
+    followingChain->prevMethods.insert({currentChain, pc});
 }
 
 static void storeMethodChains() {

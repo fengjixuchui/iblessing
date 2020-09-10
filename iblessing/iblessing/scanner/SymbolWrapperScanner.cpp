@@ -167,8 +167,10 @@ int SymbolWrapperScanner::start() {
             strcmp(insn->mnemonic, "brk") == 0) {
             funcStartCursor = insn->address + 4;
             hasMemLoader = false;
-            AntiWrapperRegLinkGraph newGraph;
-            currentGraph = newGraph;
+            {
+                AntiWrapperRegLinkGraph graph;
+                currentGraph = graph;
+            }
             return;
         }
         
@@ -235,14 +237,14 @@ int SymbolWrapperScanner::start() {
                     *stop = true;
 #endif
                 }
-                
-                // it is return anyway
-                funcStartCursor = insn->address + 4;
-                hasMemLoader = false;
-                {
-                    AntiWrapperRegLinkGraph newGraph;
-                    currentGraph = newGraph;
-                }
+            }
+            
+            // it is return anyway
+            funcStartCursor = insn->address + 4;
+            hasMemLoader = false;
+            {
+                AntiWrapperRegLinkGraph graph;
+                currentGraph = graph;
             }
         }
         
