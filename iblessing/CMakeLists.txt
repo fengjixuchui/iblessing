@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(iblessing VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS -pthread)
 set(CMAKE_C_STANDARD 11)
@@ -37,6 +37,11 @@ add_executable(iblessing iblessing/main.cpp)
 # vendor libs
 target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/capstone/libcapstone.a)
 target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/unicorn/libunicorn.a)
+target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/keystone/build/llvm/lib/libkeystone.a)
+
+if ((iblessing.PLATFORM STREQUAL "linux")) 
+    target_link_libraries(iblessing stdc++fs)
+endif()
 
 # macro inject
 if (iblessing.CSR_ENABLED) 
@@ -47,9 +52,14 @@ if (iblessing.COCOA_FOUNDATION_ENABLED)
     target_compile_definitions(iblessing PRIVATE IB_COCOA_FOUNDATION_ENABLED)
 endif()
 
+if (iblessing.PLATFORM STREQUAL "macos") 
+    target_compile_definitions(iblessing PRIVATE IB_PLATFORM_DARWIN)
+endif()
+
 set(iblessing.VENDOR_INCLUDES
     ${CMAKE_SOURCE_DIR}/../submodules/capstone/include
     ${CMAKE_SOURCE_DIR}/../submodules/unicorn/include
+    ${CMAKE_SOURCE_DIR}/../submodules/keystone/include
 )
 
 set(iblessing.SOURCE_INCLUDES
@@ -87,6 +97,7 @@ set(iblessing.SOURCE_INCLUDES
     iblessing/scanner/context
     iblessing/scanner/dispatcher
     iblessing/scanner/driver
+    iblessing/scanner/assistance/state
 
     # generator
     iblessing/generator
@@ -148,6 +159,7 @@ set(iblessing.SOURCE_LIST
     # scanner
     iblessing/scanner/context/ScannerContext.cpp
     iblessing/scanner/context/ScannerContextManager.cpp
+    iblessing/scanner/context/ScannerWorkDirManager.cpp
 
     iblessing/scanner/dispatcher/ScannerDispatcher.cpp
 
@@ -160,6 +172,8 @@ set(iblessing.SOURCE_LIST
     iblessing/scanner/SymbolWrapperScanner.cpp
     iblessing/scanner/PredicateScanner.cpp
     iblessing/scanner/ObjcUnserializationScanner.cpp
+    iblessing/scanner/assistance/state/ProgramState.cpp
+    iblessing/scanner/assistance/state/ProgramStateManager.cpp
 
     # generator
     iblessing/generator/Generator.cpp

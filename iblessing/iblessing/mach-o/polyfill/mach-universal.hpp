@@ -125,9 +125,24 @@ struct ib_mach_header_64 {
     uint32_t    reserved;    /* reserved */
 };
 
+struct ib_fat_header {
+    uint32_t    magic;        /* FAT_MAGIC */
+    uint32_t    nfat_arch;    /* number of structs that follow */
+};
+
+struct ib_fat_arch {
+    int         cputype;    /* cpu specifier (int) */
+    int         cpusubtype;    /* machine specifier (int) */
+    uint32_t    offset;        /* file offset to this object file */
+    uint32_t    size;        /* size of this object file */
+    uint32_t    align;        /* alignment as a power of 2 */
+};
+
 /* Constant for the magic field of the mach_header_64 (64-bit architectures) */
 #define IB_MH_MAGIC_64 0xfeedfacf /* the 64-bit mach magic number */
 #define IB_MH_CIGAM_64 0xcffaedfe /* NXSwapInt(MH_MAGIC_64) */
+#define IB_FAT_MAGIC   0xcafebabe
+#define IB_FAT_CIGAM   0xbebafeca /* NXSwapLong(FAT_MAGIC) */
 
 /*
  * The 64-bit segment load command indicates that a part of this file is to be
@@ -210,9 +225,9 @@ enum IBByteOrder {
     IB_BigEndian
 };
 
-extern void ib_swap_mach_header_64(
-struct ib_mach_header_64 *mh,
-enum IBByteOrder target_byte_order);
+extern void ib_swap_mach_header_64(struct ib_mach_header_64 *mh, enum IBByteOrder target_byte_order);
+extern void ib_swap_fat_header(struct ib_fat_header *mh, enum IBByteOrder target_byte_order);
+extern void ib_swap_fat_arch(struct ib_fat_arch *arch, enum IBByteOrder target_byte_order);
 
 
 #pragma mark - Segments
@@ -655,6 +670,34 @@ struct ib_entry_point_command {
     uint32_t  cmdsize;    /* 24 */
     uint64_t  entryoff;    /* file (__TEXT) offset of main() */
     uint64_t  stacksize;/* if not zero, initial stack size */
+};
+
+#define R_SCATTERED 0x80000000    /* mask to be applied to the r_address field
+                   of a relocation_info structure to tell that
+                   is is really a scattered_relocation_info
+                   stucture */
+struct scattered_relocation_info {
+//#ifdef __BIG_ENDIAN__
+//   uint32_t    r_scattered:1,    /* 1=scattered, 0=non-scattered (see above) */
+//        r_pcrel:1,     /* was relocated pc relative already */
+//        r_length:2,    /* 0=byte, 1=word, 2=long, 3=quad */
+//        r_type:4,    /* if not 0, machine specific relocation type */
+//           r_address:24;    /* offset in the section to what is being
+//                   relocated */
+//   int32_t    r_value;    /* the value the item to be relocated is
+//                   refering to (without any offset added) */
+//#endif /* __BIG_ENDIAN__ */
+//#ifdef __LITTLE_ENDIAN__
+   uint32_t
+        r_address:24,    /* offset in the section to what is being
+                   relocated */
+        r_type:4,    /* if not 0, machine specific relocation type */
+        r_length:2,    /* 0=byte, 1=word, 2=long, 3=quad */
+        r_pcrel:1,     /* was relocated pc relative already */
+        r_scattered:1;    /* 1=scattered, 0=non-scattered (see above) */
+   int32_t    r_value;    /* the value the item to be relocated is
+                   refering to (without any offset added) */
+//#endif /* __LITTLE_ENDIAN__ */
 };
 
 #endif /* mach_universal_hpp */

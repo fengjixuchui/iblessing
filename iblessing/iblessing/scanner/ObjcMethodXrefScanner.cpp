@@ -14,6 +14,7 @@
 #include "ARM64ThreadState.hpp"
 #include "StringUtils.h"
 #include <set>
+#include <algorithm>
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -27,7 +28,9 @@
 #include "VirtualMemoryV2.hpp"
 #include "CoreFoundation.hpp"
 #include "ObjcMethodChainSerializationManager.hpp"
+#include "ProgramStateManager.hpp"
 
+#define UnicornStackTopAddr      0x300000000
 #define ClassAsInstanceTrickMask 0x0100000000000000
 #define IvarInstanceTrickMask    0x1000000000000000
 #define HeapInstanceTrickMask    0x2000000000000000
@@ -37,8 +40,10 @@
 #define SubClassDummyAddress      0xcafecaaecaaecaae
 #define ExternalClassDummyAddress 0xfacefacefaceface
 
+//#define SkipPreScannerDriver
+//#define Stalker
 //#define UsingSet
-//#define DebugMethod "currentCameraPositionSubject"
+//#define DebugMethod "mlist"
 //#define DebugTrackCall
 //#define DebugClass  "AFCXbsManager"
 //#define ThreadCount 8
@@ -51,7 +56,7 @@ using namespace iblessing;
 
 static string recordPath;
 static SymbolWrapperScanner *antiWrapperScanner;
-static uc_hook insn_hook, mem_hook, memexp_hook;
+static uc_hook insn_hook, memexp_hook;
 
 static map<string, MethodChain *> sel2chain;
 static set<string> trackSymbolBlacklist = {
@@ -72,6 +77,7 @@ static set<string> trackSymbolBlacklist = {
 static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1, int sendSuperType);
 static void trackSymbolCall(uc_engine *uc, ObjcMethod *currentMethod, Symbol *symbol);
 static bool shouldTrackSymbols = true;
+static int findAllPathLevel = 0;
 static void storeMethodChains();
 
 static bool isValidClassInfo(ObjcClassRuntimeInfo *info) {
@@ -110,6 +116,14 @@ public:
     uint64_t blockDescAddr;
     uint64_t blockSize;
     
+    // state manager
+    ProgramStateManager *stateManager;
+    shared_ptr<ProgramState> currentState;
+    
+    // gc
+    vector<pair<uint64_t, uint64_t>> tmpMappedRegions;
+    vector<void *> tmpAllocateRegions;
+    
     // FIXME: trick for uc reg and capstone reg types
     cs_insn *lastInsn;
     
@@ -119,6 +133,52 @@ public:
         }
         lastInsn = copy_insn(insn);
     }
+    
+    void gc() {
+        for (pair<uint64_t, uint64_t> &tr : tmpMappedRegions) {
+            uc_mem_unmap(engine, tr.first, tr.second);
+        }
+        for (void *tr : tmpAllocateRegions) {
+            free(tr);
+        }
+        
+        tmpMappedRegions.clear();
+        tmpAllocateRegions.clear();
+    }
+    
+    bool step(bool restart_emu = false, uint64_t endAddr = 0) {
+#ifdef Stalker
+        printf("Stalker %d: SubRoutine Ended\n\n", identifer);
+#endif
+        if (stateManager->isEmpty()) {
+            uc_emu_stop(engine);
+            gc();
+            return false;
+        }
+        
+        shared_ptr<ProgramState> state = stateManager->popState();
+        uc_context_restore(engine, state->uc_ctx);
+        currentState = state;
+        lastPc = 0;
+        lastInsn = nullptr;
+        
+        // restore pc
+        uc_reg_write(engine, UC_ARM64_REG_PC, &state->pc);
+        
+        // restore stack
+        if (state->uc_stack) {
+            uc_mem_write(engine, state->uc_stack_top_addr - state->uc_stack_size, state->uc_stack, state->uc_stack_size);
+        }
+        
+        if (restart_emu) {
+            uc_emu_stop(engine);
+            uc_emu_start(engine, state->pc, endAddr, 0, 0);
+            if (!stateManager->isEmpty()) {
+                step(restart_emu, endAddr);
+            }
+        }
+        return true;
+    }
 };
 
 static map<uc_engine *, EngineContext *> engineContexts;
@@ -127,6 +187,7 @@ static pthread_mutex_t counterMutex;
 static pthread_mutex_t indexMutex;
 static uint64_t curCount = 0;
 static uint64_t totalCount = 0;
+static vector<uint64_t> functionAddrs;
 
 static void finishBlockSession(EngineContext *ctx, uc_engine *uc) {
     if (!ctx->isInBlockBuilder) {
@@ -308,6 +369,10 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
         return;
     }
     
+#ifdef Stalker
+    printf("Stalker %d: 0x%llx %s %s\n", ctx->identifer, insn->address, insn->mnemonic, insn->op_str);
+#endif
+    
     // FIXME: loop trick
     // detect loop
     if (address <= ctx->lastPc) {
@@ -330,15 +395,82 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
         free(codes);
         cs_free(insn, count);
         finishBlockSession(ctx, uc);
-        uc_emu_stop(uc);
+        ctx->step();
         return;
     }
+    
+    auto splitAtBranch = [&]() {
+        // check switch
+        if (findAllPathLevel == 0) {
+            return;
+        }
+        
+        int curDepth = ctx->currentState ? ctx->currentState->depth : 1;
+        int nextDepth = curDepth + 1;
+        
+        // specific level
+        if (findAllPathLevel > 0) {
+            int maxDepth = findAllPathLevel + 1;
+            if (nextDepth > maxDepth) {
+                return;
+            }
+        }
+        
+        // findAllPathLevel < 0 means unlimit tracking
+        
+        // create branching state
+        uint64_t branchPC = 0;
+        if (strncmp("b", insn->mnemonic, 1) == 0) {
+            cs_arm64_op addrOp = insn->detail->arm64.operands[0];
+            if (addrOp.type == ARM64_OP_IMM) {
+                branchPC = addrOp.imm;
+            } else if (addrOp.type == ARM64_OP_REG) {
+                // FIXME: trick bridging between unicorn and capstone
+                uc_arm64_reg reg = (uc_arm64_reg)addrOp.reg;
+                assert(uc_reg_read(uc, reg, &branchPC) == UC_ERR_OK);
+            }
+        } else if (strncmp("cb", insn->mnemonic, 2) == 0) {
+            cs_arm64_op addrOp = insn->detail->arm64.operands[1];
+            if (addrOp.type == ARM64_OP_IMM) {
+                branchPC = addrOp.imm;
+            }
+        }
+        
+        if (branchPC == 0) {
+            branchPC = symtab->relocQuery(insn->address);
+        }
+        
+        if (branchPC > 0) {
+            // enqueue branch state and skip
+            uc_context *branchContext;
+            assert(uc_context_alloc(uc, &branchContext) == UC_ERR_OK);
+
+            // write pc to branching
+            assert(uc_reg_write(uc, UC_ARM64_REG_PC, &branchPC) == UC_ERR_OK);
+            uc_context_save(uc, branchContext);
+
+            shared_ptr<ProgramState> state = make_shared<ProgramState>();
+            state->uc_ctx = branchContext;
+            state->pc = branchPC;
+            state->depth = nextDepth;
+            state->condition = StringUtils::format("%s %s", insn->mnemonic, insn->op_str);
+            state->uc_stack_size = 0x1000;
+            state->uc_stack = malloc(state->uc_stack_size);
+            state->uc_stack_top_addr = UnicornStackTopAddr;
+            assert(uc_mem_read(uc, state->uc_stack_top_addr - state->uc_stack_size, state->uc_stack, state->uc_stack_size) == UC_ERR_OK);
+            
+            ctx->stateManager->enqueueState(state);
+        }
+    };
     
     // split at condition branch
     // FIXME: skip now
     if (strcmp(insn->mnemonic, "cbz") == 0 ||
         strcmp(insn->mnemonic, "cbnz") == 0) {
-        // always jump to next ins
+        // split condition branch end enqueue
+        splitAtBranch();
+        
+        // jump to next ins
         uint64_t pc = address + size;
         assert(uc_reg_write(uc, UC_ARM64_REG_PC, &pc) == UC_ERR_OK);
     }
@@ -346,7 +478,10 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
     // skip branches
     if (strncmp(insn->mnemonic, "b.", 2) == 0 ||
         strncmp(insn->mnemonic, "bl.", 3) == 0) {
-        // always jump to next ins
+        // split condition branch end enqueue
+        splitAtBranch();
+        
+        // jump to next ins (no branching)
         uint64_t pc = address + size;
         assert(uc_reg_write(uc, UC_ARM64_REG_PC, &pc) == UC_ERR_OK);
     }
@@ -593,11 +728,37 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
     ctx->lastPc = address;
 }
 
-static void mem_hook_callback(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
-}
+//static void mem_hook_callback(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
+//}
 
 static bool mem_exception_hook_callback(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data) {
 //    printf("[----------------] mem error %d 0x%llx %d !!!\n", type, address, size);
+/**
+ In the event of a UC_MEM_READ_UNMAPPED or UC_MEM_WRITE_UNMAPPED callback,
+ the memory should be uc_mem_map()-ed with the correct permissions, and the
+ instruction will then read or write to the address as it was supposed to.
+ 
+ In the event of a UC_MEM_FETCH_UNMAPPED callback, the memory can be mapped
+ in as executable, in which case execution will resume from the fetched address.
+ The instruction pointer may be written to in order to change where execution resumes,
+ but the fetch must succeed if execution is to resume.
+ */
+    if (type == UC_MEM_READ_UNMAPPED || type == UC_MEM_WRITE_UNMAPPED) {
+#define UC_PAGE_SIZE 0x1000
+        uint64_t page_begin = address & ~(UC_PAGE_SIZE - 1);
+        uc_mem_map(uc, page_begin, UC_PAGE_SIZE, UC_PROT_READ | UC_PROT_WRITE);
+        
+        // FIXME: fill zero
+        void *dummy_bytes = calloc(1, size);
+        uc_mem_write(uc, address, dummy_bytes, size);
+        
+        // record to gc
+        EngineContext *ctx = engineContexts[uc];
+        ctx->tmpMappedRegions.push_back({page_begin, UC_PAGE_SIZE});
+        ctx->tmpAllocateRegions.push_back(dummy_bytes);
+    } else if (type == UC_MEM_FETCH_UNMAPPED) {
+//        printf("Warn: [-] unmapped instruction at 0x%llx\n", address);
+    }
     return true;
 }
 
@@ -656,12 +817,33 @@ void* pthread_uc_worker(void *ctx) {
 #ifdef DebugTrackCall
         printf("\n[****] start ana method %s %s, set classInfo at %p\n", m->classInfo->className.c_str(), m->name.c_str(), m->classInfo);
 #endif
-        uc_err err = uc_emu_start(context->engine, m->imp, 0, 0, 0);
+        
+        uint64_t startAddr = m->imp;
+        auto endAddrIt = std::upper_bound(functionAddrs.begin(), functionAddrs.end(), startAddr);
+        uint64_t endAddr = 0;
+        if (endAddrIt != functionAddrs.end()) {
+            endAddr = *endAddrIt;
+            if (endAddr == startAddr) {
+                endAddr = 0;
+            }
+        }
+        
+        context->currentState = nullptr;
+        uc_err err = uc_emu_start(context->engine, m->imp, endAddr, 0, 0);
         if (err != UC_ERR_OK) {
 //            printf("\t[*] uc error %s\n", uc_strerror(err));
 //            assert(0);
         }
+        if (!context->stateManager->isEmpty()) {
+            // restart emu
+            context->step(true, endAddr);
+        }
         uc_emu_stop(context->engine);
+        context->gc();
+        
+#ifdef Stalker
+        printf("Stalker %d: SubRoutine Ended\n\n", context->identifer);
+#endif
         
         pthread_mutex_lock(&counterMutex);
         curCount += 1;
@@ -691,6 +873,10 @@ void trace_all_methods(vector<uc_engine *> engines, vector<ObjcMethod *> &method
         methods = m2;
     }
 #endif
+    
+    if (methods.size() == 0) {
+        return;
+    }
     
     // split methods by engines
     uint64_t groupCount = engines.size();
@@ -738,7 +924,7 @@ uc_engine* createEngine(int identifier) {
     
     // add hooks
     uc_hook_add(uc, &insn_hook, UC_HOOK_CODE, (void *)insn_hook_callback, NULL, 1, 0);
-    uc_hook_add(uc, &mem_hook, UC_HOOK_MEM_VALID, (void *)mem_hook_callback, NULL, 1, 0);
+//    uc_hook_add(uc, &mem_hook, UC_HOOK_MEM_VALID, (void *)mem_hook_callback, NULL, 1, 0);
     uc_hook_add(uc, &memexp_hook, UC_HOOK_MEM_INVALID, (void *)mem_exception_hook_callback, NULL, 1, 0);
     
     VirtualMemoryV2::progressDefault()->mappingMachOToEngine(uc, nullptr);
@@ -746,7 +932,7 @@ uc_engine* createEngine(int identifier) {
     // setup default thread state
     assert(uc_context_alloc(uc, &ctx) == UC_ERR_OK);
     
-    uint64_t unicorn_sp_start = 0x300000000;
+    uint64_t unicorn_sp_start = UnicornStackTopAddr;
     uc_reg_write(uc, UC_ARM64_REG_SP, &unicorn_sp_start);
     
     // set FPEN on CPACR_EL1
@@ -762,6 +948,9 @@ uc_engine* createEngine(int identifier) {
     // enable detail
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
     
+    // create state manager
+    ProgramStateManager *stateManager = new ProgramStateManager();
+    
     // build context
     EngineContext *engineCtx = new EngineContext();
     engineCtx->identifer = identifier;
@@ -770,6 +959,8 @@ uc_engine* createEngine(int identifier) {
     engineCtx->defaultContext = ctx;
     engineCtx->lastPc = 0;
     engineCtx->currentMethod = NULL;
+    engineCtx->stateManager = stateManager;
+    engineCtx->currentState = nullptr;
     engineContexts[uc] = engineCtx;
     return uc;
 }
@@ -790,7 +981,11 @@ int ObjcMethodXrefScanner::start() {
         shouldTrackSymbols = atoi(options["trackSymbols"].c_str()) != 0;
     }
     
-    printf("  [*] Status: Track C Symbols: %d, Anti Wrapper: %d\n", shouldTrackSymbols, shouldAntiWrapper);
+    if (options.find("findAllPath") != options.end()) {
+        findAllPathLevel = atoi(options["findAllPath"].c_str());
+    }
+    
+    printf("  [*] Status: Track C Symbols: %d, Anti Wrapper: %d, Find All Path Level: %d\n", shouldTrackSymbols, shouldAntiWrapper, findAllPathLevel);
     
     printf("  [*] Step 1. realize all app classes\n");
     ObjcRuntime *rt = ObjcRuntime::getInstance();
@@ -839,6 +1034,7 @@ int ObjcMethodXrefScanner::start() {
     printf("\n");
     printf("\t[+] get %lu methods to analyze\n", methods.size());
     
+    vector<uint64_t> funcAddrs(impAddrs.begin(), impAddrs.end());
     
     printf("  [*] Step 2. Start sub-scanners\n");
     ScannerDisassemblyDriver *sharedDriver = new ScannerDisassemblyDriver();
@@ -882,6 +1078,7 @@ int ObjcMethodXrefScanner::start() {
     string last_mnemonic = "";
     char progressChars[] = {'\\', '|', '/', '-'};
     uint8_t progressCur = 0;
+#ifndef SkipPreScannerDriver
     sharedDriver->startDisassembly(codeData, startAddr, endAddr, [&](bool success, cs_insn *insn, bool *stop, ARM64PCRedirect **redirect) {
         float progress = 100.0 * (insn->address - startAddr) / addrRange;
 #ifdef XcodeDebug
@@ -897,6 +1094,7 @@ int ObjcMethodXrefScanner::start() {
 #endif
         progressCur = (++progressCur) % sizeof(progressChars);
     });
+#endif
     
     printf("  [*] Step 3. Create Common ClassInfo for subs and add to analysis list\n");
     vector<ObjcMethod *> subMethods;
@@ -920,6 +1118,9 @@ int ObjcMethodXrefScanner::start() {
             subMethod->imp = sxref.startAddr;
             subMethod->name = StringUtils::format("sub_0x%llx", sxref.startAddr);
             subMethods.push_back(subMethod);
+            
+            // record function addr
+            funcAddrs.push_back(sxref.startAddr);
         }
     }
     delete sxrefScanner;
@@ -959,6 +1160,9 @@ int ObjcMethodXrefScanner::start() {
         nl->n_value = symbolAddr;
         sym->info = nl;
         symtab->insertSymbol(sym);
+        
+        // record symbol addr
+        funcAddrs.push_back(symbolAddr);
     });
     
     // remove dupliate elements
@@ -969,6 +1173,10 @@ int ObjcMethodXrefScanner::start() {
     subMethods.erase(unique(subMethods.begin(), subMethods.end(), [](ObjcMethod *a, ObjcMethod *b) {
         return a->imp == b->imp;
     }), subMethods.end());
+    
+    // record all method addrs
+    sort(funcAddrs.begin(), funcAddrs.end());
+    functionAddrs = funcAddrs;
     
     
     // create global lock

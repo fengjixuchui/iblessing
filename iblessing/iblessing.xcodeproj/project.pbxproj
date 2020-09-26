@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		68192CC0251F359500EB867C /* libkeystone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68192CBF251F359500EB867C /* libkeystone.a */; };
 		6829627A24CBEE4A00EF9251 /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829627924CBEE4A00EF9251 /* Tests.m */; };
 		6829628724CBEEA300EF9251 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829628624CBEEA300EF9251 /* AppDelegate.m */; };
 		6829628D24CBEEA300EF9251 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6829628C24CBEEA300EF9251 /* ViewController.m */; };
@@ -59,6 +60,8 @@
 		68770C9124E1118D003F9652 /* CocoaAppInfoScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */; };
 		68770C9424E1130A003F9652 /* AppInfoScanner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68770C9224E1130A003F9652 /* AppInfoScanner.mm */; };
 		68770C9C24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C9A24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp */; };
+		6877B7832514913000227CFF /* ProgramState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6877B7812514913000227CFF /* ProgramState.cpp */; };
+		6877B786251492C500227CFF /* ProgramStateManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6877B784251492C500227CFF /* ProgramStateManager.cpp */; };
 		68A028C024DE7F9300077CE0 /* ScannerContextManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A028BE24DE7F9300077CE0 /* ScannerContextManager.cpp */; };
 		68A028C324DE80AB00077CE0 /* ScannerContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A028C124DE80AB00077CE0 /* ScannerContext.cpp */; };
 		68A028CB24DE897F00077CE0 /* ScannerDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A028C924DE897F00077CE0 /* ScannerDispatcher.cpp */; };
@@ -69,6 +72,7 @@
 		68BE8A8D24E9056900A534DB /* TestObjcMethodXrefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BE8A8B24E9056900A534DB /* TestObjcMethodXrefs.cpp */; };
 		68C362FA24C9C9D100441950 /* libSystem.B.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 68C362F924C9C9D000441950 /* libSystem.B.tbd */; };
 		68C3630024C9CA7200441950 /* csrutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68C362FE24C9CA7200441950 /* csrutil.cpp */; };
+		68D4E852251D993A0090D5AA /* ScannerWorkDirManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68D4E850251D993A0090D5AA /* ScannerWorkDirManager.cpp */; };
 		68D755D724C714E00057E092 /* libunicorn.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D755D624C714E00057E092 /* libunicorn.a */; };
 		68D755D924C714EC0057E092 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D755D824C714EC0057E092 /* libcapstone.a */; };
 		68D755DC24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68D755DA24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp */; };
@@ -76,6 +80,7 @@
 
 /* Begin PBXFileReference section */
 		6800875E24CAD5D100853E04 /* iblessing.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = iblessing.entitlements; sourceTree = "<group>"; };
+		68192CBF251F359500EB867C /* libkeystone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkeystone.a; sourceTree = "<group>"; };
 		6829627724CBEE4A00EF9251 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6829627924CBEE4A00EF9251 /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
 		6829627B24CBEE4A00EF9251 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -217,6 +222,7 @@
 		6866173A24DFF93A00C4FBB3 /* mach-universal.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "mach-universal.hpp"; sourceTree = "<group>"; };
 		6866173D24E51CA300C4FBB3 /* CoreFoundation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CoreFoundation.cpp; sourceTree = "<group>"; };
 		6866173E24E51CA300C4FBB3 /* CoreFoundation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CoreFoundation.hpp; sourceTree = "<group>"; };
+		686C91E7251CA5EB00EC325C /* mach-machine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mach-machine.h"; sourceTree = "<group>"; };
 		68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcBlock.cpp; sourceTree = "<group>"; };
 		68770C7024DAD45C003F9652 /* ObjcBlock.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcBlock.hpp; sourceTree = "<group>"; };
 		68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CocoaAppInfoScanner.cpp; sourceTree = "<group>"; };
@@ -225,6 +231,10 @@
 		68770C9324E1130A003F9652 /* AppInfoScanner.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppInfoScanner.hpp; sourceTree = "<group>"; };
 		68770C9A24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMsgXREFReportGenerator.cpp; sourceTree = "<group>"; };
 		68770C9B24E17212003F9652 /* ObjcMsgXREFReportGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMsgXREFReportGenerator.hpp; sourceTree = "<group>"; };
+		6877B7812514913000227CFF /* ProgramState.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramState.cpp; sourceTree = "<group>"; };
+		6877B7822514913000227CFF /* ProgramState.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ProgramState.hpp; sourceTree = "<group>"; };
+		6877B784251492C500227CFF /* ProgramStateManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramStateManager.cpp; sourceTree = "<group>"; };
+		6877B785251492C500227CFF /* ProgramStateManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ProgramStateManager.hpp; sourceTree = "<group>"; };
 		68A028BE24DE7F9300077CE0 /* ScannerContextManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ScannerContextManager.cpp; sourceTree = "<group>"; };
 		68A028BF24DE7F9300077CE0 /* ScannerContextManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ScannerContextManager.hpp; sourceTree = "<group>"; };
 		68A028C124DE80AB00077CE0 /* ScannerContext.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ScannerContext.cpp; sourceTree = "<group>"; };
@@ -247,6 +257,8 @@
 		68C362FD24C9CA4500441950 /* csr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csr.h; sourceTree = "<group>"; };
 		68C362FE24C9CA7200441950 /* csrutil.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = csrutil.cpp; sourceTree = "<group>"; };
 		68C362FF24C9CA7200441950 /* csrutil.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = csrutil.hpp; sourceTree = "<group>"; };
+		68D4E850251D993A0090D5AA /* ScannerWorkDirManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ScannerWorkDirManager.cpp; sourceTree = "<group>"; };
+		68D4E851251D993A0090D5AA /* ScannerWorkDirManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ScannerWorkDirManager.hpp; sourceTree = "<group>"; };
 		68D755D624C714E00057E092 /* libunicorn.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libunicorn.a; sourceTree = "<group>"; };
 		68D755D824C714EC0057E092 /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcapstone.a; sourceTree = "<group>"; };
 		68D755DA24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMsgXREFServerGenerator.cpp; sourceTree = "<group>"; };
@@ -273,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				68C362FA24C9C9D100441950 /* libSystem.B.tbd in Frameworks */,
+				68192CC0251F359500EB867C /* libkeystone.a in Frameworks */,
 				68D755D924C714EC0057E092 /* libcapstone.a in Frameworks */,
 				68D755D724C714E00057E092 /* libunicorn.a in Frameworks */,
 			);
@@ -538,6 +551,7 @@
 		685CE82E24C5723F002CC5E8 /* libs */ = {
 			isa = PBXGroup;
 			children = (
+				68192CBF251F359500EB867C /* libkeystone.a */,
 				68D755D824C714EC0057E092 /* libcapstone.a */,
 				68D755D624C714E00057E092 /* libunicorn.a */,
 			);
@@ -547,6 +561,7 @@
 		685CE83524C572A0002CC5E8 /* scanner */ = {
 			isa = PBXGroup;
 			children = (
+				6877B77D251454C900227CFF /* assistance */,
 				68A028D324DE8F3600077CE0 /* driver */,
 				68A028C824DE894B00077CE0 /* dispatcher */,
 				68A028C424DE821F00077CE0 /* common */,
@@ -714,6 +729,7 @@
 		6866173724DFF8E800C4FBB3 /* polyfill */ = {
 			isa = PBXGroup;
 			children = (
+				686C91E7251CA5EB00EC325C /* mach-machine.h */,
 				6866173924DFF93A00C4FBB3 /* mach-universal.cpp */,
 				6866173A24DFF93A00C4FBB3 /* mach-universal.hpp */,
 			);
@@ -729,6 +745,25 @@
 			path = foundation;
 			sourceTree = "<group>";
 		};
+		6877B77D251454C900227CFF /* assistance */ = {
+			isa = PBXGroup;
+			children = (
+				6877B77E251454F700227CFF /* state */,
+			);
+			path = assistance;
+			sourceTree = "<group>";
+		};
+		6877B77E251454F700227CFF /* state */ = {
+			isa = PBXGroup;
+			children = (
+				6877B7822514913000227CFF /* ProgramState.hpp */,
+				6877B7812514913000227CFF /* ProgramState.cpp */,
+				6877B785251492C500227CFF /* ProgramStateManager.hpp */,
+				6877B784251492C500227CFF /* ProgramStateManager.cpp */,
+			);
+			path = state;
+			sourceTree = "<group>";
+		};
 		68A028BD24DE7F8000077CE0 /* context */ = {
 			isa = PBXGroup;
 			children = (
@@ -736,6 +771,8 @@
 				68A028BF24DE7F9300077CE0 /* ScannerContextManager.hpp */,
 				68A028C124DE80AB00077CE0 /* ScannerContext.cpp */,
 				68A028C224DE80AB00077CE0 /* ScannerContext.hpp */,
+				68D4E850251D993A0090D5AA /* ScannerWorkDirManager.cpp */,
+				68D4E851251D993A0090D5AA /* ScannerWorkDirManager.hpp */,
 			);
 			path = context;
 			sourceTree = "<group>";
@@ -989,8 +1026,10 @@
 				6829631D24D0460500EF9251 /* FunctionPrototype.cpp in Sources */,
 				685CE81124C57079002CC5E8 /* DyldSimulator.cpp in Sources */,
 				68A028CB24DE897F00077CE0 /* ScannerDispatcher.cpp in Sources */,
+				6877B786251492C500227CFF /* ProgramStateManager.cpp in Sources */,
 				68BE8A8724E904AF00A534DB /* TestManager.cpp in Sources */,
 				68BE8A8A24E9052200A534DB /* Tester.cpp in Sources */,
+				6877B7832514913000227CFF /* ProgramState.cpp in Sources */,
 				685CE85C24C57360002CC5E8 /* GeneratorDispatcher.cpp in Sources */,
 				68770C9424E1130A003F9652 /* AppInfoScanner.mm in Sources */,
 				685CE85B24C57360002CC5E8 /* Generator.cpp in Sources */,
@@ -1000,6 +1039,7 @@
 				685CE84A24C572A0002CC5E8 /* PredicateScanner.cpp in Sources */,
 				68C3630024C9CA7200441950 /* csrutil.cpp in Sources */,
 				685CE84924C572A0002CC5E8 /* SymbolWrapperScanner.cpp in Sources */,
+				68D4E852251D993A0090D5AA /* ScannerWorkDirManager.cpp in Sources */,
 				685CE84524C572A0002CC5E8 /* ObjcClassXrefScanner.cpp in Sources */,
 				685CE81224C57079002CC5E8 /* ARM64Runtime.cpp in Sources */,
 				685CE82424C57131002CC5E8 /* StringUtils.cpp in Sources */,
@@ -1147,8 +1187,8 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
+					IB_PLATFORM_DARWIN,
+					DEBUG,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -1202,6 +1242,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = IB_PLATFORM_DARWIN;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1218,6 +1259,7 @@
 		685CE7D724C55309002CC5E8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1239,6 +1281,7 @@
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"${SRCROOT}/../submodules/capstone/include",
 					"${SRCROOT}/../submodules/unicorn/include",
+					"${SRCROOT}/../submodules/keystone/include",
 				);
 			};
 			name = Debug;
@@ -1246,6 +1289,7 @@
 		685CE7D824C55309002CC5E8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_ENTITLEMENTS = iblessing/iblessing.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1264,6 +1308,7 @@
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"${SRCROOT}/../submodules/capstone/include",
 					"${SRCROOT}/../submodules/unicorn/include",
+					"${SRCROOT}/../submodules/keystone/include",
 				);
 			};
 			name = Release;
