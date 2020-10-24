@@ -12,6 +12,7 @@
 #include "StringUtils.h"
 #include "ObjcRuntime.hpp"
 #include "VirtualMemoryV2.hpp"
+#include "CoreFoundation.hpp"
 #include <stack>
 
 using namespace std;
@@ -152,10 +153,10 @@ ObjcClassRuntimeInfo* ObjcClassRuntimeInfo::realizeFromAddress(uint64_t address)
         uint64_t imp_offset = types_offset + 8;
         uint64_t imp_addr = rf64cnt(imp_offset, objc_methods_addr += 24);
         
-        // add to class method list
         ObjcMethod *method = new ObjcMethod();
         method->name = sel_str;
         method->types = types_str;
+        method->argTypes = CoreFoundation::argumentsFromSignature(types_ptr);
         method->imp = imp_addr;
         method->isClassMethod = false;
         method->classInfo = info;
@@ -213,6 +214,7 @@ ObjcClassRuntimeInfo* ObjcClassRuntimeInfo::realizeFromAddress(uint64_t address)
         ObjcMethod *method = new ObjcMethod();
         method->name = sel_str;
         method->types = types_str;
+        method->argTypes = CoreFoundation::argumentsFromSignature(types_ptr);
         method->imp = imp_addr;
         method->isClassMethod = true;
         method->classInfo = info;
@@ -300,7 +302,7 @@ ObjcClassRuntimeInfo* ObjcClassRuntimeInfo::realizeFromAddress(uint64_t address)
     // realize superclass
     uint64_t objc_superclass_offset = objc_data_addr + 8;
     uint64_t objc_superclass_addr = rf64rn(objc_superclass_offset);
-    if (objc_superclass_addr != 0) {
+    if (objc_superclass_addr != 0 && objc_superclass_addr != address) {
         info->superClassInfo = ObjcClassRuntimeInfo::realizeFromAddress(objc_superclass_addr);
     } else {
         info->superClassInfo = nullptr;

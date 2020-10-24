@@ -11,6 +11,7 @@
 #include <sstream>
 #include <set>
 #include <map>
+#include <stack>
 #include "termcolor.h"
 
 using namespace std;
@@ -68,16 +69,27 @@ vector<string> CoreFoundation::argumentsFromSignature(const char *signaure) {
                 i++;
             }
             args.push_back(ss.str());
-        }
-        
-        // check for structs
-        if (bMap.find(c) != bMap.end()) {
+        } else if (bMap.find(c) != bMap.end()) {
+            stack<char> stk;
+            stringstream ss;
+            
+            stk.push(c);
+            ss << c;
+            i++;
+            
+            char begin = c;
             char end = bMap[c];
-            while (i < len && signaure[i] != end) {
+            while (!stk.empty() && i < len) {
+                char c = signaure[i];
+                if (c == begin) {
+                    stk.push(c);
+                } else if (c == end) {
+                    stk.pop();
+                }
+                ss << c;
                 i++;
             }
-            // consume end
-            i++;
+            args.push_back(ss.str());
         }
         
         // check for objects
@@ -135,4 +147,29 @@ vector<string> CoreFoundation::argumentsFromSignature(const char *signaure) {
     }
     
     return args;
+}
+
+string CoreFoundation::resolveTypeEncoding(string &typeEncoding) {
+    static map<string, string> primaryTypes{
+        {"c", "char"},
+        {"i", "int"},
+        {"s", "short"},
+        {"l", "long"},
+        {"q", "long long"},
+        {"C", "unsigned char"},
+        {"I", "unsigned int"},
+        {"S", "unsigned short"},
+        {"L", "unsigned long"},
+        {"Q", "unsigned long long"},
+        {"f", "float"},
+        {"d", "double"},
+        {"B", "bool"},
+        {"v", "void"},
+        {"*", "char *"},
+    };
+    if (primaryTypes.find(typeEncoding) != primaryTypes.end()) {
+        return primaryTypes[typeEncoding];
+    }
+    
+    return "";
 }

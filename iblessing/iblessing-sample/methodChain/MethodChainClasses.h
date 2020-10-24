@@ -13,6 +13,7 @@
 + (void)rootClassMethodCallFromPrimary;
 + (void)rootClassMethodCallFromInstanceClass;
 + (void)rootClassMethodCallFromReflection;
++ (void)rootClassMethodCallFromCategoryMethod;
 - (void)rootInstanceMethodCallFromAllocate;
 - (void)rootInstanceMethodCallFromIvar;
 - (void)rootInstanceMethodFromBranchTrue;
@@ -64,5 +65,20 @@
 @end
 
 @interface TrapObject : NSObject
+
+@end
+
+@interface CategoryObject : NSObject
+
+@end
+
+@interface CategoryObject (Addon)
+
+- (void)callFromInstance;
++ (void)callFromClass;
+
+@end
+
+@interface InstanceObject : NSObject
 
 @end

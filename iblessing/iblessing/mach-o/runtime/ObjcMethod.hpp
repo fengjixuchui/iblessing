@@ -23,6 +23,7 @@ public:
     bool isDummy;
     std::string name;
     std::string types;
+    std::vector<std::string> argTypes;
     uint64_t imp;
     ObjcClassRuntimeInfo *classInfo;
     
@@ -31,6 +32,8 @@ public:
     bool operator < (ObjcMethod *other) {
         return name < other->name;
     }
+    
+    std::string desc();
 };
 
 NS_IB_END

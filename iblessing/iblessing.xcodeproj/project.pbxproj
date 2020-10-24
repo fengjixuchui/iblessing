@@ -21,6 +21,8 @@
 		6829631D24D0460500EF9251 /* FunctionPrototype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829631B24D0460500EF9251 /* FunctionPrototype.cpp */; };
 		6829632324D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829632124D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp */; };
 		6829633524D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6829633324D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp */; };
+		684458C025432D5B00A9D441 /* ObjcMethodCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 684458BE25432D5B00A9D441 /* ObjcMethodCall.cpp */; };
+		684458C32543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 684458C12543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.cpp */; };
 		6856E6E324E7C4370050DA19 /* IDASymbolicScriptGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6856E6E124E7C4370050DA19 /* IDASymbolicScriptGenerator.cpp */; };
 		685B5B8E24D6711E00C30CFD /* SymbolXREFScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685B5B8C24D6711E00C30CFD /* SymbolXREFScanner.cpp */; };
 		685CE7DB24C56E8B002CC5E8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 685CE7DA24C56E8B002CC5E8 /* main.cpp */; };
@@ -56,6 +58,8 @@
 		6861982A24E9645D003AB00A /* ObjcUnserializationScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6861982824E9645D003AB00A /* ObjcUnserializationScanner.cpp */; };
 		6866173B24DFF93A00C4FBB3 /* mach-universal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6866173924DFF93A00C4FBB3 /* mach-universal.cpp */; };
 		6866173F24E51CA300C4FBB3 /* CoreFoundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6866173D24E51CA300C4FBB3 /* CoreFoundation.cpp */; };
+		68666DAF25288B710014BC91 /* NSString+IBS.m in Sources */ = {isa = PBXBuildFile; fileRef = 68666DAE25288B710014BC91 /* NSString+IBS.m */; };
+		68666DB225288E370014BC91 /* ObjcCategory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68666DB025288E370014BC91 /* ObjcCategory.cpp */; };
 		68770C7124DAD45C003F9652 /* ObjcBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */; };
 		68770C9124E1118D003F9652 /* CocoaAppInfoScanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68770C8F24E1118D003F9652 /* CocoaAppInfoScanner.cpp */; };
 		68770C9424E1130A003F9652 /* AppInfoScanner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68770C9224E1130A003F9652 /* AppInfoScanner.mm */; };
@@ -106,6 +110,10 @@
 		6829632224D052AF00EF9251 /* SymbolWrapperSerializationManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SymbolWrapperSerializationManager.hpp; sourceTree = "<group>"; };
 		6829633324D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IDASymbolWrapperNamingScriptGenerator.cpp; sourceTree = "<group>"; };
 		6829633424D2838500EF9251 /* IDASymbolWrapperNamingScriptGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IDASymbolWrapperNamingScriptGenerator.hpp; sourceTree = "<group>"; };
+		684458BE25432D5B00A9D441 /* ObjcMethodCall.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodCall.cpp; sourceTree = "<group>"; };
+		684458BF25432D5B00A9D441 /* ObjcMethodCall.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMethodCall.hpp; sourceTree = "<group>"; };
+		684458C12543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcMethodCallSnapshotSerializationManager.cpp; sourceTree = "<group>"; };
+		684458C22543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcMethodCallSnapshotSerializationManager.hpp; sourceTree = "<group>"; };
 		6856E6E124E7C4370050DA19 /* IDASymbolicScriptGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IDASymbolicScriptGenerator.cpp; sourceTree = "<group>"; };
 		6856E6E224E7C4370050DA19 /* IDASymbolicScriptGenerator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IDASymbolicScriptGenerator.hpp; sourceTree = "<group>"; };
 		685B5B8C24D6711E00C30CFD /* SymbolXREFScanner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolXREFScanner.cpp; sourceTree = "<group>"; };
@@ -222,6 +230,10 @@
 		6866173A24DFF93A00C4FBB3 /* mach-universal.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "mach-universal.hpp"; sourceTree = "<group>"; };
 		6866173D24E51CA300C4FBB3 /* CoreFoundation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CoreFoundation.cpp; sourceTree = "<group>"; };
 		6866173E24E51CA300C4FBB3 /* CoreFoundation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CoreFoundation.hpp; sourceTree = "<group>"; };
+		68666DAD25288B710014BC91 /* NSString+IBS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+IBS.h"; sourceTree = "<group>"; };
+		68666DAE25288B710014BC91 /* NSString+IBS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+IBS.m"; sourceTree = "<group>"; };
+		68666DB025288E370014BC91 /* ObjcCategory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcCategory.cpp; sourceTree = "<group>"; };
+		68666DB125288E370014BC91 /* ObjcCategory.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcCategory.hpp; sourceTree = "<group>"; };
 		686C91E7251CA5EB00EC325C /* mach-machine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mach-machine.h"; sourceTree = "<group>"; };
 		68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjcBlock.cpp; sourceTree = "<group>"; };
 		68770C7024DAD45C003F9652 /* ObjcBlock.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjcBlock.hpp; sourceTree = "<group>"; };
@@ -326,6 +338,8 @@
 			children = (
 				6829629D24CBEEFD00EF9251 /* MethodChainClasses.h */,
 				6829629E24CBEEFD00EF9251 /* MethodChainClasses.m */,
+				68666DAD25288B710014BC91 /* NSString+IBS.h */,
+				68666DAE25288B710014BC91 /* NSString+IBS.m */,
 			);
 			path = methodChain;
 			sourceTree = "<group>";
@@ -496,6 +510,8 @@
 				685CE80524C57079002CC5E8 /* ObjcObject.cpp */,
 				68770C6F24DAD45C003F9652 /* ObjcBlock.cpp */,
 				68770C7024DAD45C003F9652 /* ObjcBlock.hpp */,
+				68666DB025288E370014BC91 /* ObjcCategory.cpp */,
+				68666DB125288E370014BC91 /* ObjcCategory.hpp */,
 			);
 			path = runtime;
 			sourceTree = "<group>";
@@ -612,6 +628,8 @@
 			children = (
 				685CE85124C57308002CC5E8 /* ObjcMethodChain.cpp */,
 				685CE85224C57309002CC5E8 /* ObjcMethodChain.hpp */,
+				684458BE25432D5B00A9D441 /* ObjcMethodCall.cpp */,
+				684458BF25432D5B00A9D441 /* ObjcMethodCall.hpp */,
 			);
 			path = domain;
 			sourceTree = "<group>";
@@ -722,6 +740,8 @@
 				685CE88E24C68933002CC5E8 /* ObjcMethodChainSerializationManager.hpp */,
 				6829632124D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp */,
 				6829632224D052AF00EF9251 /* SymbolWrapperSerializationManager.hpp */,
+				684458C12543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.cpp */,
+				684458C22543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.hpp */,
 			);
 			path = serialization;
 			sourceTree = "<group>";
@@ -980,6 +1000,7 @@
 			files = (
 				6829628D24CBEEA300EF9251 /* ViewController.m in Sources */,
 				6829629F24CBEEFD00EF9251 /* MethodChainClasses.m in Sources */,
+				68666DAF25288B710014BC91 /* NSString+IBS.m in Sources */,
 				6829628724CBEEA300EF9251 /* AppDelegate.m in Sources */,
 				6829629824CBEEA500EF9251 /* main.m in Sources */,
 				68AE3B1224EB9CFE003E25EF /* InsecureUnSerialization.m in Sources */,
@@ -1000,6 +1021,7 @@
 				685CE85D24C57360002CC5E8 /* IDAObjcMsgXREFGenerator.cpp in Sources */,
 				685CE81324C57079002CC5E8 /* ObjcClass.cpp in Sources */,
 				685CE84624C572A0002CC5E8 /* ObjcMethodXrefScanner.cpp in Sources */,
+				684458C32543E14400A9D441 /* ObjcMethodCallSnapshotSerializationManager.cpp in Sources */,
 				6829632324D052AF00EF9251 /* SymbolWrapperSerializationManager.cpp in Sources */,
 				682962E424CD490E00EF9251 /* Foundation.cpp in Sources */,
 				685CE81724C57079002CC5E8 /* ObjcObject.cpp in Sources */,
@@ -1008,6 +1030,7 @@
 				685CE84824C572A0002CC5E8 /* Scanner.cpp in Sources */,
 				6861982A24E9645D003AB00A /* ObjcUnserializationScanner.cpp in Sources */,
 				685CE7DB24C56E8B002CC5E8 /* main.cpp in Sources */,
+				68666DB225288E370014BC91 /* ObjcCategory.cpp in Sources */,
 				68770C9C24E17212003F9652 /* ObjcMsgXREFReportGenerator.cpp in Sources */,
 				685CE84F24C572D4002CC5E8 /* AntiWrapper.cpp in Sources */,
 				685CE81624C57079002CC5E8 /* ObjcIvar.cpp in Sources */,
@@ -1015,6 +1038,7 @@
 				68D755DC24C8012A0057E092 /* ObjcMsgXREFServerGenerator.cpp in Sources */,
 				685CE80924C57079002CC5E8 /* Symbol.cpp in Sources */,
 				685CE81E24C5708A002CC5E8 /* Object.cpp in Sources */,
+				684458C025432D5B00A9D441 /* ObjcMethodCall.cpp in Sources */,
 				685CE80D24C57079002CC5E8 /* VirtualMemoryV2.cpp in Sources */,
 				685CE81424C57079002CC5E8 /* ObjcMethod.cpp in Sources */,
 				68A028C324DE80AB00077CE0 /* ScannerContext.cpp in Sources */,
@@ -1269,6 +1293,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"DEBUG=1",
+					XcodeDebug,
 				);
 				INSTALL_PATH = "";
 				LIBRARY_SEARCH_PATHS = (

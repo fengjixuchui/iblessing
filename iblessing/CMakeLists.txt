@@ -147,6 +147,7 @@ set(iblessing.SOURCE_LIST
     iblessing/mach-o/runtime/ObjcMethod.cpp
     iblessing/mach-o/runtime/ObjcObject.cpp
     iblessing/mach-o/runtime/ObjcRuntime.cpp
+    iblessing/mach-o/runtime/ObjcCategory.cpp
 
     iblessing/mach-o/structs/Foundation.cpp
 
@@ -188,6 +189,7 @@ set(iblessing.SOURCE_LIST
     # serialization
     iblessing/serialization/ObjcMethodChainSerializationManager.cpp
     iblessing/serialization/SymbolWrapperSerializationManager.cpp
+    iblessing/serialization/ObjcMethodCallSnapshotSerializationManager.cpp
 
     # analyzer
     iblessing/analyzer/deobfuscator/AntiWrapper.cpp
@@ -195,6 +197,7 @@ set(iblessing.SOURCE_LIST
 
     # domain
     iblessing/domain/ObjcMethodChain.cpp
+    iblessing/domain/ObjcMethodCall.cpp
 
     # test
     iblessing/tests/Tester.cpp

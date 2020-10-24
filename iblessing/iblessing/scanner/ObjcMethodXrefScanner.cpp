@@ -18,6 +18,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <memory>
 #include "DyldSimulator.hpp"
 #include <pthread.h>
 #include <unicorn/unicorn.h>
@@ -28,14 +29,20 @@
 #include "VirtualMemoryV2.hpp"
 #include "CoreFoundation.hpp"
 #include "ObjcMethodChainSerializationManager.hpp"
+#include "ObjcMethodCallSnapshotSerializationManager.hpp"
 #include "ProgramStateManager.hpp"
+#include "ObjcMethodCall.hpp"
 
 #define UnicornStackTopAddr      0x300000000
+
+// masks
 #define ClassAsInstanceTrickMask 0x0100000000000000
 #define IvarInstanceTrickMask    0x1000000000000000
 #define HeapInstanceTrickMask    0x2000000000000000
 #define SelfInstanceTrickMask    0x4000000000000000
-#define SelfSelectorTrickMask    0x8000000000000000
+
+// marks
+#define SelfSelectorMark         0x8888888888888888
 
 #define SubClassDummyAddress      0xcafecaaecaaecaae
 #define ExternalClassDummyAddress 0xfacefacefaceface
@@ -54,11 +61,13 @@
 using namespace std;
 using namespace iblessing;
 
-static string recordPath;
+static string recordPath, callSnapshotPath;
 static SymbolWrapperScanner *antiWrapperScanner;
 static uc_hook insn_hook, memexp_hook;
 
 static map<string, MethodChain *> sel2chain;
+static map<uint64_t, set<ObjcMethodCall>> callSnapshots;
+
 static set<string> trackSymbolBlacklist = {
     "_objc_copyWeak", "_objc_moveWeak", "_objc_initWeak",
     "_objc_loadWeak", "_objc_loadWeakRetained", "_objc_storeWeak",
@@ -188,6 +197,16 @@ static pthread_mutex_t indexMutex;
 static uint64_t curCount = 0;
 static uint64_t totalCount = 0;
 static vector<uint64_t> functionAddrs;
+
+// options
+static bool trackingCallSnapshots = true;
+
+static uc_arm64_reg getFunctionArgRegAtIndex(int index) {
+    if (index < 8) {
+        return (uc_arm64_reg)(UC_ARM64_REG_X0 + index);
+    }
+    return UC_ARM64_REG_INVALID;
+}
 
 static void finishBlockSession(EngineContext *ctx, uc_engine *uc) {
     if (!ctx->isInBlockBuilder) {
@@ -613,7 +632,6 @@ static void insn_hook_callback(uc_engine *uc, uint64_t address, uint32_t size, v
             // this is a trick before method emu start (x0 = &classInfo)
             pthread_mutex_lock(&indexMutex);
             if (x0 & SelfInstanceTrickMask) {
-//                    x0 = x0 & ~(SelfInstanceTrickMask);
                 // self call, write self's real class addr to x0
                 uc_reg_write(uc, UC_ARM64_REG_X0, &ctx->currentMethod->classInfo->address);
             } else if (rt->ivarInstanceTrickAddress2RuntimeInfo.find(x0) != rt->ivarInstanceTrickAddress2RuntimeInfo.end()) {
@@ -785,11 +803,11 @@ void* pthread_uc_worker(void *ctx) {
         
         if (!m->classInfo->isSub) {
             // init x0 as classref
-            uint64_t selfTrickAddr = ((uint64_t)m->classInfo) | SelfInstanceTrickMask;
+            uint64_t selfTrickAddr = (m->classInfo->address) | SelfInstanceTrickMask;
             uc_reg_write(context->engine, UC_ARM64_REG_X0, &selfTrickAddr);
             
             // init x1 as SEL, faked as self class info
-            uint64_t selfSELAddr = ((uint64_t)m->classInfo) | SelfSelectorTrickMask;
+            uint64_t selfSELAddr = SelfSelectorMark;
             uc_reg_write(context->engine, UC_ARM64_REG_X1, &selfSELAddr);
         } else {
             if (rt->invoker2block.find(m->imp) != rt->invoker2block.end()) {
@@ -806,7 +824,7 @@ void* pthread_uc_worker(void *ctx) {
                 for (int i = 0; i < std::min((int)block->args.size(), 8); i++) {
                     BlockVariable *blockVar = block->args[i];
                     if (blockVar->type == BlockVariableTypeObjcClass) {
-                        uint64_t encodedAddr = (uint64_t)blockVar->classInfo;
+                        uint64_t encodedAddr = blockVar->classInfo->address;
                         encodedAddr = encodedAddr | ClassAsInstanceTrickMask;
                         uc_reg_write(context->engine, UC_ARM64_REG_X1 + i, &encodedAddr);
                     }
@@ -1034,104 +1052,16 @@ int ObjcMethodXrefScanner::start() {
     printf("\n");
     printf("\t[+] get %lu methods to analyze\n", methods.size());
     
+    printf("  [*] Step 2. dyld load non-lazy symbols\n");
     vector<uint64_t> funcAddrs(impAddrs.begin(), impAddrs.end());
-    
-    printf("  [*] Step 2. Start sub-scanners\n");
-    ScannerDisassemblyDriver *sharedDriver = new ScannerDisassemblyDriver();
-    if (shouldAntiWrapper) {
-        ScannerDispatcher *dispatcher = reinterpret_cast<ScannerDispatcher *>(this->dispatcher);
-        options["symbols"] = "_objc_msgSend";
-        Scanner *s = dispatcher->prepareForScanner("symbol-wrapper", options, inputPath, outputPath, sharedDriver);
-        if (s) {
-            antiWrapperScanner = reinterpret_cast<SymbolWrapperScanner *>(s);
-            antiWrapperScanner->start();
-        }
-        cout << termcolor::yellow << "    [!] Warning: the anti-wrapper mode consumes a huge amount of memory,";
-        cout << " this may be related to a memory leak or emulator problem, and I haven't solved it yet";
-        cout << termcolor::reset << endl;
-    } else {
-        antiWrapperScanner = nullptr;
-    }
-    
-    recordPath = StringUtils::path_join(outputPath, fileName + "_method-xrefs.iblessing.txt");
-    
-    SymbolXREFScanner *sxrefScanner = nullptr;
-    ScannerDispatcher *dispatcher = reinterpret_cast<ScannerDispatcher *>(this->dispatcher);
-    options["symbols"] = "_objc_msgSend";
-    Scanner *s = dispatcher->prepareForScanner("symbol-xref", options, inputPath, outputPath, sharedDriver);
-    if (s) {
-        sxrefScanner = reinterpret_cast<SymbolXREFScanner *>(s);
-        sxrefScanner->start();
-    } else {
-        cout << termcolor::red << "    [-] Error: cannot find symbol-xref scanner";
-        cout << termcolor::reset << endl;
-        return 1;
-    }
-    
-    printf("    [*] Dispatching Disassembly Driver\n");
     VirtualMemoryV2 *vm2 = VirtualMemoryV2::progressDefault();
-    struct ib_section_64 *textSect = vm2->getTextSect();
-    uint64_t startAddr = textSect->addr;
-    uint64_t endAddr = textSect->addr + textSect->size;
-    uint64_t addrRange = endAddr - startAddr;
-    uint8_t *codeData = vm2->getMappedFile() + textSect->offset;
-    string last_mnemonic = "";
-    char progressChars[] = {'\\', '|', '/', '-'};
-    uint8_t progressCur = 0;
-#ifndef SkipPreScannerDriver
-    sharedDriver->startDisassembly(codeData, startAddr, endAddr, [&](bool success, cs_insn *insn, bool *stop, ARM64PCRedirect **redirect) {
-        float progress = 100.0 * (insn->address - startAddr) / addrRange;
-#ifdef XcodeDebug
-        static long _filter = 0;
-        if (++_filter % 5000 == 0) {
-            
-#endif
-        fprintf(stdout, "\r\t[*] %c 0x%llx/0x%llx (%.2f%%)", progressChars[progressCur], insn->address, endAddr, progress);
-        fflush(stdout);
-            
-#ifdef XcodeDebug
-        }
-#endif
-        progressCur = (++progressCur) % sizeof(progressChars);
-    });
-#endif
-    
-    printf("  [*] Step 3. Create Common ClassInfo for subs and add to analysis list\n");
-    vector<ObjcMethod *> subMethods;
-    // create common classInfo for subs
-    ObjcClassRuntimeInfo *subClassInfo = new ObjcClassRuntimeInfo();
-    subClassInfo->address = SubClassDummyAddress;
-    subClassInfo->isExternal = true;
-    subClassInfo->isSub = true;
-    subClassInfo->className = StringUtils::format("iblessing_SubClass");
-    for (auto it = sxrefScanner->xrefs.begin(); it != sxrefScanner->xrefs.end(); it++) {
-        for (SymbolXREF sxref : it->second) {
-            if (impAddrs.find(sxref.startAddr) != impAddrs.end()) {
-                // skip imp
-                continue;
-            }
-            
-            // find a sub
-            ObjcMethod *subMethod = new ObjcMethod();
-            subMethod->classInfo = subClassInfo;
-            subMethod->isClassMethod = true;
-            subMethod->imp = sxref.startAddr;
-            subMethod->name = StringUtils::format("sub_0x%llx", sxref.startAddr);
-            subMethods.push_back(subMethod);
-            
-            // record function addr
-            funcAddrs.push_back(sxref.startAddr);
-        }
-    }
-    delete sxrefScanner;
-    
-    printf("  [*] Step 4. dyld load non-lazy symbols\n");
     DyldSimulator::eachBind(vm2->getMappedFile(), vm2->getSegmentHeaders(), vm2->getDyldInfo(), [&](uint64_t addr, uint8_t type, const char *symbolName, uint8_t symbolFlags, uint64_t addend, uint64_t libraryOrdinal, const char *msg) {
         uint64_t symbolAddr = addr + addend;
         
         // load non-lazy symbols
         for (uc_engine *uc : engines) {
             uc_mem_write(uc, symbolAddr, &symbolAddr, 8);
+            vm2->write64(symbolAddr, symbolAddr);
         }
         
         // record class info
@@ -1165,6 +1095,115 @@ int ObjcMethodXrefScanner::start() {
         funcAddrs.push_back(symbolAddr);
     });
     
+    printf("  [*] Step 3. load objc categories\n");
+    if (rt->catlist_addr != 0) {
+        uint64_t totalCount = 0;
+        rt->loadCatList(rt->catlist_addr, rt->catlist_size);
+        for (shared_ptr<ObjcCategory> category : rt->categoryList) {
+            vector<shared_ptr<ObjcMethod>> allMethods(category->instanceMethods);
+            allMethods.insert(allMethods.end(), category->classMethods.begin(), category->classMethods.end());
+            totalCount += allMethods.size();
+            for (shared_ptr<ObjcMethod> &m : allMethods) {
+                methods.push_back(m.get());
+                impAddrs.insert(m->imp);
+            }
+        }
+        
+        cout << "\t[+] A total of ";
+        cout << termcolor::green << totalCount;
+        cout << termcolor::reset;
+        cout << " category methods were found" << endl;
+    }
+    
+    printf("  [*] Step 4. Start sub-scanners\n");
+    ScannerDisassemblyDriver *sharedDriver = new ScannerDisassemblyDriver();
+    if (shouldAntiWrapper) {
+        ScannerDispatcher *dispatcher = reinterpret_cast<ScannerDispatcher *>(this->dispatcher);
+        options["symbols"] = "_objc_msgSend";
+        Scanner *s = dispatcher->prepareForScanner("symbol-wrapper", options, inputPath, outputPath, sharedDriver);
+        if (s) {
+            antiWrapperScanner = reinterpret_cast<SymbolWrapperScanner *>(s);
+            antiWrapperScanner->start();
+        }
+        cout << termcolor::yellow << "    [!] Warning: the anti-wrapper mode consumes a huge amount of memory,";
+        cout << " this may be related to a memory leak or emulator problem, and I haven't solved it yet";
+        cout << termcolor::reset << endl;
+    } else {
+        antiWrapperScanner = nullptr;
+    }
+    
+    recordPath = StringUtils::path_join(outputPath, fileName + "_method-xrefs.iblessing.txt");
+    callSnapshotPath = StringUtils::path_join(outputPath, fileName + "_call-snapshots.iblessing.json");
+    
+    SymbolXREFScanner *sxrefScanner = nullptr;
+    ScannerDispatcher *dispatcher = reinterpret_cast<ScannerDispatcher *>(this->dispatcher);
+    options["symbols"] = "_objc_msgSend";
+    Scanner *s = dispatcher->prepareForScanner("symbol-xref", options, inputPath, outputPath, sharedDriver);
+    if (s) {
+        sxrefScanner = reinterpret_cast<SymbolXREFScanner *>(s);
+        sxrefScanner->start();
+    } else {
+        cout << termcolor::red << "    [-] Error: cannot find symbol-xref scanner";
+        cout << termcolor::reset << endl;
+        return 1;
+    }
+    
+    printf("    [*] Dispatching Disassembly Driver\n");
+    struct ib_section_64 *textSect = vm2->getTextSect();
+    uint64_t startAddr = textSect->addr;
+    uint64_t endAddr = textSect->addr + textSect->size;
+    uint64_t addrRange = endAddr - startAddr;
+    uint8_t *codeData = vm2->getMappedFile() + textSect->offset;
+    string last_mnemonic = "";
+    char progressChars[] = {'\\', '|', '/', '-'};
+    uint8_t progressCur = 0;
+#ifndef SkipPreScannerDriver
+    sharedDriver->startDisassembly(codeData, startAddr, endAddr, [&](bool success, cs_insn *insn, bool *stop, ARM64PCRedirect **redirect) {
+        float progress = 100.0 * (insn->address - startAddr) / addrRange;
+#ifdef XcodeDebug
+        static long _filter = 0;
+        if (++_filter % 5000 == 0) {
+            
+#endif
+        fprintf(stdout, "\r\t[*] %c 0x%llx/0x%llx (%.2f%%)", progressChars[progressCur], insn->address, endAddr, progress);
+        fflush(stdout);
+            
+#ifdef XcodeDebug
+        }
+#endif
+        progressCur = (++progressCur) % sizeof(progressChars);
+    });
+#endif
+    
+    printf("  [*] Step 5. create common class info for subs and add to analysis list\n");
+    vector<ObjcMethod *> subMethods;
+    // create common classInfo for subs
+    ObjcClassRuntimeInfo *subClassInfo = new ObjcClassRuntimeInfo();
+    subClassInfo->address = SubClassDummyAddress;
+    subClassInfo->isExternal = true;
+    subClassInfo->isSub = true;
+    subClassInfo->className = StringUtils::format("iblessing_SubClass");
+    for (auto it = sxrefScanner->xrefs.begin(); it != sxrefScanner->xrefs.end(); it++) {
+        for (SymbolXREF sxref : it->second) {
+            if (impAddrs.find(sxref.startAddr) != impAddrs.end()) {
+                // skip imp
+                continue;
+            }
+            
+            // find a sub
+            ObjcMethod *subMethod = new ObjcMethod();
+            subMethod->classInfo = subClassInfo;
+            subMethod->isClassMethod = true;
+            subMethod->imp = sxref.startAddr;
+            subMethod->name = StringUtils::format("sub_0x%llx", sxref.startAddr);
+            subMethods.push_back(subMethod);
+            
+            // record function addr
+            funcAddrs.push_back(sxref.startAddr);
+        }
+    }
+    delete sxrefScanner;
+    
     // remove dupliate elements
     methods.erase(unique(methods.begin(), methods.end(), [](ObjcMethod *a, ObjcMethod *b) {
         return a->imp == b->imp;
@@ -1187,10 +1226,10 @@ int ObjcMethodXrefScanner::start() {
     assert(pthread_mutex_init(&counterMutex, &attr) == 0);
     assert(pthread_mutex_init(&indexMutex, &attr) == 0);
     
-    printf("  [*] Step 5. track all objc calls\n");
+    printf("  [*] Step 6. track all objc calls\n");
     trace_all_methods(engines, methods);
     
-    printf("  [*] Step 6. track all sub calls\n");
+    printf("  [*] Step 7. track all sub calls\n");
     trace_all_methods(engines, subMethods);
     
     storeMethodChains();
@@ -1199,6 +1238,134 @@ int ObjcMethodXrefScanner::start() {
     }
     printf("  [*] ObjcMethodXrefScanner Exploit Scanner finished\n");
     return 0;
+}
+
+static ObjcClassRuntimeInfo* tryResolveObjcClass(uint64_t address) {
+    ObjcClassRuntimeInfo *classInfo = nullptr;
+    ObjcRuntime *rt = ObjcRuntime::getInstance();
+    if (address & ClassAsInstanceTrickMask) {
+        // FIXME: unsafe convert & read
+        uint64_t classAddr = address & (~ClassAsInstanceTrickMask);
+        classInfo = rt->getClassInfoByAddress(classAddr, false);
+    } else if (address & IvarInstanceTrickMask) {
+        uint64_t classAddr = address & (~IvarInstanceTrickMask);
+        classInfo = rt->getClassInfoByAddress(classAddr, false);
+    } else if (address & HeapInstanceTrickMask) {
+        uint64_t classAddr = address & (~HeapInstanceTrickMask);
+        classInfo = rt->getClassInfoByAddress(classAddr, false);
+    } else if (address & SelfInstanceTrickMask) {
+        uint64_t classAddr = address & (~SelfInstanceTrickMask);
+        classInfo = rt->getClassInfoByAddress(classAddr, false);
+    }
+    return classInfo;
+}
+
+static void dumpInputArgs(uint64_t chainId, uc_engine *uc, ObjcMethod *calleeMethod) {
+    VirtualMemoryV2 *vm2 = VirtualMemoryV2::progressDefault();
+    if (trackingCallSnapshots && calleeMethod != nullptr) {
+        vector<ObjcMethodCallArg> callArgs;
+        
+        vector<string> args = calleeMethod->argTypes;
+        int startPos = 0;
+        if (calleeMethod && calleeMethod->classInfo) {
+            if (calleeMethod->classInfo->isSub) {
+                // block call: (return_type, block_self, ...)
+                startPos = 2;
+            } else {
+                // objc call: (return_type, self, sel, ...)
+                startPos = 3;
+            }
+        }
+        
+        vector<pair<string, uc_arm64_reg>> keyArgs;
+        for (int i = startPos; i < args.size(); i++) {
+            keyArgs.push_back({args[i], getFunctionArgRegAtIndex(i - 1)});
+        }
+        
+        if (keyArgs.size() > 0) {
+            // dump args from regs
+//            printf("\n[+] find call with args %s\n", calleeMethod->name.c_str());
+            int idx = 0;
+            for (pair<string, uc_arm64_reg> &arg : keyArgs) {
+                string &argEncode = arg.first;
+                uc_arm64_reg &reg = arg.second;
+                uint64_t regValue = 0;
+                if (UC_ERR_OK == uc_reg_read(uc, reg, &regValue)) {
+                    bool resolved = false;
+                    if (argEncode == "id") {
+                        ObjcClassRuntimeInfo *classInfo = tryResolveObjcClass(regValue);
+                        if (classInfo) {
+                            resolved = true;
+//                            printf("  [+] arg %d: %s -> %s\n", idx, argEncode.c_str(), classInfo->className.c_str());
+                            callArgs.push_back(ObjcMethodCallArg(argEncode,
+                                                                 classInfo->className.c_str(),
+                                                                 "",
+                                                                 false,
+                                                                 false));
+                        } else {
+                            char *maybeCFString = vm2->readAsCFStringContent(regValue, true);
+                            if (maybeCFString) {
+                                resolved = true;
+//                                printf("  [+] arg %d: NSString -> @\"%s\"\n", idx, maybeCFString);
+                                callArgs.push_back(ObjcMethodCallArg(argEncode,
+                                                                     "NSString",
+                                                                     string(maybeCFString),
+                                                                     false,
+                                                                     true));
+                                free(maybeCFString);
+                            }
+                        }
+                    } else if (argEncode == "@?") {
+                        resolved = true;
+//                        printf("  [+] arg %d: %s -> ObjcBlock\n", idx, argEncode.c_str());
+                        callArgs.push_back(ObjcMethodCallArg(argEncode,
+                                                             "ObjcBlock",
+                                                             "",
+                                                             false,
+                                                             false));
+                    }
+                    if (!resolved) {
+                        bool isPrimary = (argEncode.length() == 1 && argEncode != "*");
+                        bool resolved = false;
+                        string typeName = CoreFoundation::resolveTypeEncoding(argEncode);
+                        if (typeName.length() > 0) {
+                            if (isPrimary) {
+                                if (typeName == "float"  ||
+                                    typeName == "double" ||
+                                    typeName == "char *") {
+                                    // FIXME: resolve SIMD types and C pointers
+                                    resolved = false;
+                                } else {
+                                    // FIXME: we can only resolve primary types now
+                                    resolved = true;
+                                }
+                            }
+//                            printf("  [+] arg %d: %s -> 0x%llx\n", idx, typeName.c_str(), regValue);
+                        } else {
+//                            printf("  [+] arg %d: %s -> 0x%llx\n", idx, argEncode.c_str(), regValue);
+                        }
+                        callArgs.push_back(ObjcMethodCallArg(argEncode,
+                                                             typeName,
+                                                             StringUtils::format("0x%llx", regValue),
+                                                             isPrimary,
+                                                             resolved));
+                    }
+                } else {
+                    string typeName = CoreFoundation::resolveTypeEncoding(argEncode);
+//                    printf("  [+] arg %d: %s -> ?\n", idx, argEncode.c_str());
+                    callArgs.push_back(ObjcMethodCallArg(argEncode,
+                                                         typeName,
+                                                         "",
+                                                         false,
+                                                         false));
+                }
+                idx++;
+            }
+            
+            ObjcMethodCall methodCall = ObjcMethodCall(calleeMethod, callArgs);
+            callSnapshots[chainId].insert(methodCall);
+        } // end of for keyArgs
+    }
 }
 
 static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uint64_t x1, int sendSuperType) {
@@ -1216,7 +1383,7 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
     // read sel
     if (x1) {
         // FIXME: x1 trick at method prologue
-        if (x1 & SelfSelectorTrickMask) {
+        if (x1 == SelfSelectorMark) {
             detectedSEL = currentMethod->name.c_str();
         } else {
             detectedSEL = vm2->readString(x1, 255);
@@ -1259,10 +1426,10 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
         instanceAddr = addr;
         if (x0 & SelfInstanceTrickMask) {
             // self call -[self foo]
-            detectedClassInfo = reinterpret_cast<ObjcClassRuntimeInfo *>(x0 & (~SelfInstanceTrickMask));
+            detectedClassInfo = rt->getClassInfoByAddress(x0 & (~SelfInstanceTrickMask), false);
             methodPrefix = "-";
         } else if (x0 & ClassAsInstanceTrickMask) {
-            detectedClassInfo = reinterpret_cast<ObjcClassRuntimeInfo *>(x0 & (~ClassAsInstanceTrickMask));
+            detectedClassInfo = rt->getClassInfoByAddress(x0 & (~ClassAsInstanceTrickMask), false);
             methodPrefix = "-";
         } else if (rt->address2RuntimeInfo.find(addr) != rt->address2RuntimeInfo.end()) {
             // +[Class foo]
@@ -1361,6 +1528,7 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
     }
     
     // validate class & sel or find similar one
+    ObjcMethod *calleeMethod = nullptr;
     if (!rt->isExistMethod(methodPrefix, classExpr, detectedSEL)) {
         // try to infer one
         ObjcMethod *inferredMethod = rt->inferNearestMethod(methodPrefix, classExpr, detectedSEL);
@@ -1368,8 +1536,13 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
             methodPrefix = inferredMethod->isClassMethod ? "+" : "-";
             classExpr = inferredMethod->classInfo->className;
             detectedSEL = inferredMethod->name.c_str();
+            calleeMethod = inferredMethod;
         } else {
 //            printf("    [-] Warn: skip %s[%s %s]\n", methodPrefix, classExpr.c_str(), detectedSEL);
+        }
+    } else {
+        if (trackingCallSnapshots) {
+            calleeMethod = rt->inferNearestMethod(methodPrefix, classExpr, detectedSEL);
         }
     }
     
@@ -1457,6 +1630,8 @@ static void trackCall(uc_engine *uc, ObjcMethod *currentMethod, uint64_t x0, uin
     currentChain->nextMethods.insert({followingChain, pc});
     followingChain->prevMethods.insert({currentChain, pc});
     
+    dumpInputArgs(followingChain->chainId, uc, calleeMethod);
+    
 #if ShowFullLog
     printf("[+] find trace %s (0x%llx) -> %s (0x%llx)\n", currentMethodExpr.c_str(), currentChain->impAddr, followingMethodExpr.c_str(), followingChain->impAddr);
 #endif
@@ -1514,11 +1689,18 @@ static void trackSymbolCall(uc_engine *uc, ObjcMethod *currentMethod, Symbol *sy
 }
 
 static void storeMethodChains() {
-    printf("  [*] Step 7. serialize call chains to file\n");
+    printf("  [*] Step 8. serialize call chains to file\n");
     if (ObjcMethodChainSerializationManager::storeMethodChain(recordPath, sel2chain)) {
         printf("\t[*] saved to %s\n", recordPath.c_str());
     } else {
         printf("\t[*] error: cannot save to path %s\n", recordPath.c_str());
+    }
+    
+    printf("  [*] Step 9. store call snapshots to file\n");
+    if (ObjcMethodCallSnapshotSerializationManager::storeAsJSON(callSnapshotPath, callSnapshots)) {
+        printf("\t[*] saved to %s\n", callSnapshotPath.c_str());
+    } else {
+        printf("\t[*] error: cannot save to path %s\n", callSnapshotPath.c_str());
     }
 }
 
