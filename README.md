@@ -6,12 +6,12 @@
            ██║██████╔╝███████╗███████╗███████║███████║██║██║ ╚████║╚██████╔╝
            ╚═╝╚═════╝ ╚══════╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝
 
-[![Build Status](https://travis-ci.org/aquynh/capstone.svg?branch=master)](https://travis-ci.org/Soulghost/iblessing)
+[![Build Status](https://api.travis-ci.org/Soulghost/iblessing.svg?branch=master)](https://travis-ci.org/Soulghost/iblessing)
 [![Releases](https://img.shields.io/github/v/release/Soulghost/iblessing?include_prereleases)](https://github.com/Soulghost/iblessing/releases)
 
 # iblessing
 - `iblessing` is an iOS security exploiting toolkit, it mainly includes **application information collection**, **static analysis** and **dynamic analysis**.
-- `iblessing` is based on [unicorn engine](https://github.com/unicorn-engine/unicorn) and [capstone engine](https://github.com/aquynh/capstone).
+- `iblessing` is based on [unicorn engine](https://github.com/unicorn-engine/unicorn), [capstone engine](https://github.com/aquynh/capstone) and [keystone engine](https://github.com/keystone-engine/keystone).
 
 # Features
 - [x] 🔥 Cross-platform: Tested on macOS and Ubuntu.
@@ -45,6 +45,8 @@ In case you need support regarding iblessing or anything associated with it, you
 - send mail to xiuyutong1994#gmail.com
 
 # Changelog
+- 2020.11.30 - Objc reflection info (https://github.com/Soulghost/iblessing/wiki/Objc-Reflection-Info)
+- 2020.10.24 - Objc call snapshots (https://github.com/Soulghost/iblessing/wiki/Objc-Call-Snapshots)
 - 2020.10.04 - Objc category list support
 - 2020.09.28 - Static library and fat mach-o support
 - 2020.09.22 - Basic program state and condition branching

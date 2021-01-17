@@ -98,9 +98,15 @@ set(iblessing.SOURCE_INCLUDES
     iblessing/scanner/dispatcher
     iblessing/scanner/driver
     iblessing/scanner/assistance/state
+    iblessing/scanner/sub-scanner
+    iblessing/scanner/sub-scanner/objc-msg-xref
 
     # generator
     iblessing/generator
+
+    # tools
+    iblessing/tools
+    iblessing/tools/otool
 
     # serialization
     iblessing/serialization
@@ -176,6 +182,8 @@ set(iblessing.SOURCE_LIST
     iblessing/scanner/assistance/state/ProgramState.cpp
     iblessing/scanner/assistance/state/ProgramStateManager.cpp
 
+    iblessing/scanner/sub-scanner/objc-msg-xref/ObjcReflectionInfoManager.cpp
+
     # generator
     iblessing/generator/Generator.cpp
     iblessing/generator/GeneratorDispatcher.cpp
@@ -185,6 +193,9 @@ set(iblessing.SOURCE_LIST
     iblessing/generator/ObjcMsgXREFStatisticsGenerator.cpp
     iblessing/generator/ObjcMsgXREFReportGenerator.cpp
     iblessing/generator/IDASymbolicScriptGenerator.cpp
+
+    # tools
+    iblessing/tools/otool/ObjDumpTool.cpp
 
     # serialization
     iblessing/serialization/ObjcMethodChainSerializationManager.cpp
