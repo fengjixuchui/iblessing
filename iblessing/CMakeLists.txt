@@ -33,27 +33,47 @@ endif()
 
 # main executable
 add_executable(iblessing iblessing/main.cpp)
+add_executable(iblessing-all iblessing/main.cpp)
+add_library(iblessing-core SHARED iblessing-core/v2/iblessing-core.cpp)
+add_library(iblessing-core-static STATIC iblessing-core/v2/iblessing-core.cpp)
 
 # vendor libs
-target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/capstone/libcapstone.a)
-target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/unicorn/libunicorn.a)
-target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/keystone/build/llvm/lib/libkeystone.a)
+# target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/capstone/libcapstone.a)
+target_link_libraries(iblessing-core ${CMAKE_SOURCE_DIR}/../submodules/capstone/libcapstone.a)
+target_link_libraries(iblessing-core-static ${CMAKE_SOURCE_DIR}/../submodules/capstone/libcapstone.a)
+
+# target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/unicorn/libunicorn.a)
+target_link_libraries(iblessing-core ${CMAKE_SOURCE_DIR}/../submodules/unicorn/libunicorn.a)
+target_link_libraries(iblessing-core-static ${CMAKE_SOURCE_DIR}/../submodules/unicorn/libunicorn.a)
+
+# target_link_libraries(iblessing ${CMAKE_SOURCE_DIR}/../submodules/keystone/build/llvm/lib/libkeystone.a)
+target_link_libraries(iblessing-core ${CMAKE_SOURCE_DIR}/../submodules/keystone/build/llvm/lib/libkeystone.a)
+target_link_libraries(iblessing-core-static ${CMAKE_SOURCE_DIR}/../submodules/keystone/build/llvm/lib/libkeystone.a)
+
+target_link_libraries(iblessing iblessing-core)
+target_link_libraries(iblessing-all iblessing-core-static)
 
 if ((iblessing.PLATFORM STREQUAL "linux")) 
-    target_link_libraries(iblessing stdc++fs)
+    target_link_libraries(iblessing dl)
+    target_link_libraries(iblessing-all dl)
+    target_link_libraries(iblessing-core stdc++fs)
+    target_link_libraries(iblessing-core-static stdc++fs)
 endif()
 
 # macro inject
 if (iblessing.CSR_ENABLED) 
     target_compile_definitions(iblessing PRIVATE IB_CSR_ENABLED)
+    target_compile_definitions(iblessing-all PRIVATE IB_CSR_ENABLED)
 endif()
 
 if (iblessing.COCOA_FOUNDATION_ENABLED) 
     target_compile_definitions(iblessing PRIVATE IB_COCOA_FOUNDATION_ENABLED)
+    target_compile_definitions(iblessing-all PRIVATE IB_COCOA_FOUNDATION_ENABLED)
 endif()
 
 if (iblessing.PLATFORM STREQUAL "macos") 
     target_compile_definitions(iblessing PRIVATE IB_PLATFORM_DARWIN)
+    target_compile_definitions(iblessing-all PRIVATE IB_PLATFORM_DARWIN)
 endif()
 
 set(iblessing.VENDOR_INCLUDES
@@ -65,61 +85,78 @@ set(iblessing.VENDOR_INCLUDES
 set(iblessing.SOURCE_INCLUDES
     ${CMAKE_SOURCE_DIR}
 
-    # vendors
+    iblessing
+    iblessing/tests
+    iblessing/vendor
     iblessing/vendor/argparse
-    iblessing/vendor/termcolor
-    iblessing/vendor/httplib
-    iblessing/vendor/rapidjson
+    iblessing/builtin/generator
+    iblessing/builtin/serialization
+    iblessing/builtin/scanner
+    iblessing/builtin/scanner/domain
+    iblessing/builtin/scanner/assistance/state
+    iblessing/builtin/scanner/sub-scanner/objc-msg-xref
 
+    # dirty work
     # utils
-    iblessing/util
+    iblessing-core/v2/util
 
     # infra
-    iblessing/infra
-
-    # common
-    iblessing/common
-    iblessing/common/macro
-
-    # mach-o
-    iblessing/mach-o/polyfill
-    iblessing/mach-o/disasm
-    iblessing/mach-o/dyld
-    iblessing/mach-o/memory
-    iblessing/mach-o/runtime
-    iblessing/mach-o/structs
-    iblessing/mach-o/symtab
-    iblessing/mach-o/foundation
+    iblessing-core/infra
+    iblessing-core/core/polyfill
+    iblessing-core/core/disasm
+    iblessing-core/core/dyld
+    iblessing-core/core/memory
+    iblessing-core/core/runtime
+    iblessing-core/core/structs
+    iblessing-core/core/symtab
+    iblessing-core/core/foundation
 
     # scanner
-    iblessing/scanner
-    iblessing/scanner/common
-    iblessing/scanner/context
-    iblessing/scanner/dispatcher
-    iblessing/scanner/driver
-    iblessing/scanner/assistance/state
-    iblessing/scanner/sub-scanner
-    iblessing/scanner/sub-scanner/objc-msg-xref
+    iblessing-core/scanner/context
+    iblessing-core/scanner/dispatcher
+    iblessing-core/scanner/driver
 
-    # generator
-    iblessing/generator
+    # v2
+    iblessing-core/v2/mach-o
+    iblessing-core/v2/memory
+    iblessing-core/v2/dyld
+    iblessing-core/v2/objc
+    iblessing-core/v2/analyser/wrapper
+    iblessing-core/v2/analyser/xref
+)
 
-    # tools
-    iblessing/tools
-    iblessing/tools/otool
+set(iblessing-core.SOURCE_INCLUDES
+    ${CMAKE_SOURCE_DIR}
 
-    # serialization
-    iblessing/serialization
+    iblessing-core/
+    # utils
+    iblessing-core/v2/util
 
-    # analyzer
-    iblessing/analyzer
-    iblessing/analyzer/deobfuscator
+    # infra
+    iblessing-core/infra
 
-    # domain
-    iblessing/domain
+    # mach-o
+    iblessing-core/core/polyfill
+    iblessing-core/core/disasm
+    iblessing-core/core/dyld
+    iblessing-core/core/memory
+    iblessing-core/core/runtime
+    iblessing-core/core/structs
+    iblessing-core/core/symtab
+    iblessing-core/core/foundation
 
-    # tests
-    iblessing/tests
+    # scanner
+    iblessing-core/scanner/context
+    iblessing-core/scanner/dispatcher
+    iblessing-core/scanner/driver
+
+    # v2
+    iblessing-core/v2/mach-o
+    iblessing-core/v2/memory
+    iblessing-core/v2/dyld
+    iblessing-core/v2/objc
+    iblessing-core/v2/analyser/wrapper
+    iblessing-core/v2/analyser/xref
 )
 
 if (iblessing.CSR_ENABLED)
@@ -129,92 +166,96 @@ if (iblessing.CSR_ENABLED)
 endif()
 
 set(iblessing.SOURCE_LIST
-    # utils
-    iblessing/util/StringUtils.cpp
+    iblessing/builtin/scanner/ObjcClassXrefScanner.cpp
+    iblessing/builtin/scanner/ObjcMethodXrefScanner.cpp
+    iblessing/builtin/scanner/SymbolXREFScanner.cpp
+    iblessing/builtin/scanner/SymbolWrapperScanner.cpp
+    iblessing/builtin/scanner/PredicateScanner.cpp
+    iblessing/builtin/scanner/ObjcUnserializationScanner.cpp
+    iblessing/builtin/scanner/assistance/state/ProgramState.cpp
+    iblessing/builtin/scanner/assistance/state/ProgramStateManager.cpp
+    iblessing/builtin/scanner/sub-scanner/objc-msg-xref/ObjcReflectionInfoManager.cpp
 
-    # infra
-    iblessing/infra/Object.cpp
-
-    # mach-o
-    iblessing/mach-o/polyfill/mach-universal.cpp
-    iblessing/mach-o/disasm/ARM64Disasembler.cpp
-    iblessing/mach-o/disasm/ARM64Registers.cpp
-    iblessing/mach-o/disasm/ARM64ThreadState.cpp
-
-    iblessing/mach-o/dyld/DyldSimulator.cpp
-
-    iblessing/mach-o/memory/VirtualMemory.cpp
-    iblessing/mach-o/memory/VirtualMemoryV2.cpp
-
-    iblessing/mach-o/runtime/ARM64Runtime.cpp
-    iblessing/mach-o/runtime/ObjcBlock.cpp
-    iblessing/mach-o/runtime/ObjcClass.cpp
-    iblessing/mach-o/runtime/ObjcIvar.cpp
-    iblessing/mach-o/runtime/ObjcMethod.cpp
-    iblessing/mach-o/runtime/ObjcObject.cpp
-    iblessing/mach-o/runtime/ObjcRuntime.cpp
-    iblessing/mach-o/runtime/ObjcCategory.cpp
-    iblessing/mach-o/runtime/SimpleSimProcedure.cpp
-
-    iblessing/mach-o/structs/Foundation.cpp
-
-    iblessing/mach-o/symtab/StringTable.cpp
-    iblessing/mach-o/symtab/Symbol.cpp
-    iblessing/mach-o/symtab/SymbolTable.cpp
-
-    iblessing/mach-o/foundation/CoreFoundation.cpp
-
-    # scanner
-    iblessing/scanner/context/ScannerContext.cpp
-    iblessing/scanner/context/ScannerContextManager.cpp
-    iblessing/scanner/context/ScannerWorkDirManager.cpp
-
-    iblessing/scanner/dispatcher/ScannerDispatcher.cpp
-
-    iblessing/scanner/driver/ScannerDisassemblyDriver.cpp
-
-    iblessing/scanner/Scanner.cpp
-    iblessing/scanner/ObjcClassXrefScanner.cpp
-    iblessing/scanner/ObjcMethodXrefScanner.cpp
-    iblessing/scanner/SymbolXREFScanner.cpp
-    iblessing/scanner/SymbolWrapperScanner.cpp
-    iblessing/scanner/PredicateScanner.cpp
-    iblessing/scanner/ObjcUnserializationScanner.cpp
-    iblessing/scanner/assistance/state/ProgramState.cpp
-    iblessing/scanner/assistance/state/ProgramStateManager.cpp
-
-    iblessing/scanner/sub-scanner/objc-msg-xref/ObjcReflectionInfoManager.cpp
+    # registry
+    iblessing/registry/PluginRegistry.cpp
 
     # generator
-    iblessing/generator/Generator.cpp
-    iblessing/generator/GeneratorDispatcher.cpp
-    iblessing/generator/IDAObjcMsgXREFGenerator.cpp
-    iblessing/generator/IDASymbolWrapperNamingScriptGenerator.cpp
-    iblessing/generator/ObjcMsgXREFServerGenerator.cpp
-    iblessing/generator/ObjcMsgXREFStatisticsGenerator.cpp
-    iblessing/generator/ObjcMsgXREFReportGenerator.cpp
-    iblessing/generator/IDASymbolicScriptGenerator.cpp
-
-    # tools
-    iblessing/tools/otool/ObjDumpTool.cpp
+    iblessing/builtin/generator/Generator.cpp
+    iblessing/builtin/generator/GeneratorDispatcher.cpp
+    iblessing/builtin/generator/IDAObjcMsgXREFGenerator.cpp
+    iblessing/builtin/generator/IDASymbolWrapperNamingScriptGenerator.cpp
+    iblessing/builtin/generator/ObjcMsgXREFServerGenerator.cpp
+    iblessing/builtin/generator/ObjcMsgXREFStatisticsGenerator.cpp
+    iblessing/builtin/generator/ObjcMsgXREFReportGenerator.cpp
+    iblessing/builtin/generator/IDASymbolicScriptGenerator.cpp
 
     # serialization
-    iblessing/serialization/ObjcMethodChainSerializationManager.cpp
-    iblessing/serialization/SymbolWrapperSerializationManager.cpp
-    iblessing/serialization/ObjcMethodCallSnapshotSerializationManager.cpp
-
-    # analyzer
-    iblessing/analyzer/deobfuscator/AntiWrapper.cpp
-    iblessing/analyzer/deobfuscator/FunctionPrototype.cpp
+    iblessing/builtin/serialization/ObjcMethodChainSerializationManager.cpp
+    iblessing/builtin/serialization/SymbolWrapperSerializationManager.cpp
+    iblessing/builtin/serialization/ObjcMethodCallSnapshotSerializationManager.cpp
 
     # domain
-    iblessing/domain/ObjcMethodChain.cpp
-    iblessing/domain/ObjcMethodCall.cpp
+    iblessing/builtin/scanner/domain/ObjcMethodChain.cpp
+    iblessing/builtin/scanner/domain/ObjcMethodCall.cpp
 
     # test
     iblessing/tests/Tester.cpp
     iblessing/tests/TestManager.cpp
     iblessing/tests/TestObjcMethodXrefs.cpp
+)
+
+set(iblessing-core.SOURCE_LIST
+    # utils
+    iblessing-core/v2/util/StringUtils.cpp
+
+    # infra
+    iblessing-core/infra/Object.cpp
+
+    # mach-o
+    iblessing-core/core/polyfill/mach-universal.cpp
+    iblessing-core/core/disasm/ARM64Disasembler.cpp
+    iblessing-core/core/disasm/ARM64Registers.cpp
+    iblessing-core/core/disasm/ARM64ThreadState.cpp
+
+    iblessing-core/core/dyld/DyldSimulator.cpp
+
+    iblessing-core/core/memory/VirtualMemory.cpp
+    iblessing-core/core/memory/VirtualMemoryV2.cpp
+
+    iblessing-core/core/runtime/ARM64Runtime.cpp
+    iblessing-core/core/runtime/ObjcBlock.cpp
+    iblessing-core/core/runtime/ObjcClass.cpp
+    iblessing-core/core/runtime/ObjcIvar.cpp
+    iblessing-core/core/runtime/ObjcMethod.cpp
+    iblessing-core/core/runtime/ObjcObject.cpp
+    iblessing-core/core/runtime/ObjcRuntime.cpp
+    iblessing-core/core/runtime/ObjcCategory.cpp
+    iblessing-core/core/runtime/SimpleSimProcedure.cpp
+
+    iblessing-core/core/structs/Foundation.cpp
+
+    iblessing-core/core/symtab/StringTable.cpp
+    iblessing-core/core/symtab/Symbol.cpp
+    iblessing-core/core/symtab/SymbolTable.cpp
+
+    iblessing-core/core/foundation/CoreFoundation.cpp
+
+    # scanner
+    iblessing-core/scanner/context/ScannerContext.cpp
+    iblessing-core/scanner/context/ScannerContextManager.cpp
+    iblessing-core/scanner/context/ScannerWorkDirManager.cpp
+    iblessing-core/scanner/dispatcher/ScannerDispatcher.cpp
+    iblessing-core/scanner/driver/ScannerDisassemblyDriver.cpp
+
+    # v2
+    iblessing-core/v2/mach-o/mach-o.cpp
+    iblessing-core/v2/memory/memory.cpp
+    iblessing-core/v2/dyld/dyld.cpp
+    iblessing-core/v2/objc/objc.cpp
+    iblessing-core/v2/analyser/wrapper/AntiWrapper.cpp
+    iblessing-core/v2/analyser/wrapper/FunctionPrototype.cpp
+    iblessing-core/v2/analyser/wrapper/SimpleWrapperAnalyser.cpp
+    iblessing-core/v2/analyser/xref/FunctionXrefAnalyser.cpp
 )
 
 if (iblessing.CSR_ENABLED)
@@ -226,14 +267,33 @@ endif()
 if (iblessing.COCOA_FOUNDATION_ENABLED) 
     set(iblessing.SOURCE_LIST ${iblessing.SOURCE_LIST}
         # cocoa scanner
-        iblessing/scanner/AppInfoScanner.mm
+        iblessing/builtin/scanner/AppInfoScanner.mm
     )
 
     target_link_libraries(iblessing "-framework Foundation")
+    target_link_libraries(iblessing-all "-framework Foundation")
 endif()
 
 target_include_directories(iblessing PRIVATE 
                            ${iblessing.SOURCE_INCLUDES}
                            ${iblessing.VENDOR_INCLUDES}
                            )
+target_include_directories(iblessing-all PRIVATE 
+                           ${iblessing.SOURCE_INCLUDES}
+                           ${iblessing.VENDOR_INCLUDES}
+                           )
+
+target_include_directories(iblessing-core PRIVATE 
+                           ${iblessing-core.SOURCE_INCLUDES}
+                           ${iblessing.VENDOR_INCLUDES}
+                           )
+target_include_directories(iblessing-core-static PRIVATE 
+                           ${iblessing-core.SOURCE_INCLUDES}
+                           ${iblessing.VENDOR_INCLUDES}
+                           )
+
 target_sources(iblessing PRIVATE ${iblessing.SOURCE_LIST})
+target_sources(iblessing-all PRIVATE ${iblessing.SOURCE_LIST})
+
+target_sources(iblessing-core PRIVATE ${iblessing-core.SOURCE_LIST})
+target_sources(iblessing-core-static PRIVATE ${iblessing-core.SOURCE_LIST})

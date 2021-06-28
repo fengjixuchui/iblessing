@@ -7,15 +7,13 @@
 //
 
 #include <cstdio>
-#include "StringUtils.h"
+#include <iblessing-core/v2/util/StringUtils.h>
+#include <iblessing-core/v2/util/termcolor.h>
+#include <iblessing-core/scanner/dispatcher/ScannerDispatcher.hpp>
 #include "argparse.h"
-#include "termcolor.h"
-#include "ScannerDispatcher.hpp"
 #include "GeneratorDispatcher.hpp"
 #include "TestManager.hpp"
-
-// tools
-#include "ObjDumpTool.hpp"
+#include <iblessing/registry/PluginRegistry.h>
 
 #ifdef IB_CSR_ENABLED
 #include "csrutil.hpp"
@@ -38,8 +36,10 @@ int main(int argc, const char *argv[]) {
            \n");
     
     // hello text
-    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 0.6.1 (http://blog.asm.im)\n");
+    printf("[***] iblessing iOS Security Exploiting Toolkit Beta 1.0.2 (http://blog.asm.im)\n");
     printf("[***] Author: Soulghost (高级页面仔) @ (https://github.com/Soulghost)\n");
+    
+    registerPlugins();
 
 #ifdef IB_CSR_ENABLED
     if (CSRUtil::isSIPon()) {
@@ -96,7 +96,11 @@ int main(int argc, const char *argv[]) {
     // hanle parse error
     auto err = parser.parse(argc, argv);
     if (err) {
-        parser.print_help();
+        if (parser.exists("list")) {
+            goto print_list;
+        } else {
+            parser.print_help();
+        }
         return 1;
     }
     
@@ -108,7 +112,8 @@ int main(int argc, const char *argv[]) {
     
     // handle scanner list
     if (parser.exists("list")) {
-        ScannerDispatcher *sd = new ScannerDispatcher();
+print_list:
+        ScannerDispatcher *sd = ScannerDispatcher::getInstance();
         vector<Scanner *> scanners = sd->allScanners();
         printf("[*] Scanner List:\n");
         for (Scanner *scanner : scanners) {
@@ -234,15 +239,11 @@ int main(int argc, const char *argv[]) {
             }
         }
         printf("[*] set jobs count to %d\n", jobs);
-        ScannerDispatcher *dispatcher = new ScannerDispatcher();
+        ScannerDispatcher *dispatcher = ScannerDispatcher::getInstance();
         dispatcher->jobs = jobs;
         int ret = dispatcher->start(scannerId, options, filePath, outputFilePath);
         delete dispatcher;
         return ret;
-    } else if (mode == "otool") {
-        printf("[*] otool mode\n");
-        ObjDumpTool otool;
-        return otool.dumpTextSection(filePath);
     } else if (mode == "test") {
         printf("[*] test mode\n");
         bool success = TestManager::testAll();

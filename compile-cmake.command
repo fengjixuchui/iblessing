@@ -18,9 +18,9 @@ cd build
 ../make-lib.sh
 cd ../../..
 
-cp submodules/capstone/libcapstone.a                iblessing/iblessing/vendor/libs/
-cp submodules/unicorn/libunicorn.a                  iblessing/iblessing/vendor/libs/
-cp submodules/keystone/build/llvm/lib/libkeystone.a iblessing/iblessing/vendor/libs/
+cp submodules/capstone/libcapstone.a                iblessing/iblessing-core/vendor/libs/
+cp submodules/unicorn/libunicorn.a                  iblessing/iblessing-core/vendor/libs/
+cp submodules/keystone/build/llvm/lib/libkeystone.a iblessing/iblessing-core/vendor/libs/
 
 mkdir -p cmake-build
 cd cmake-build
@@ -35,8 +35,20 @@ cmake --build .
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     mv iblessing iblessing-darwin
+    mv iblessing-all iblessing-darwin-all
 else
     mv iblessing iblessing-linux
+    mv iblessing-all iblessing-linux-all
+fi
+
+cd ..
+sh ./copy-headers.sh
+
+cd cmake-build
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    tar -czvf iblessing-framework-darwin.tar.gz ./libiblessing-core.dylib include
+else
+    tar -czvf iblessing-framework-linux.tar.gz ./libiblessing-core.so include
 fi
 
 cd ..
